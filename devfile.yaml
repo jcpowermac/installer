@@ -1,0 +1,40 @@
+---
+metadata:
+  generateName: openshift-installer-
+projects:
+  - name: openshift-installer
+    source:
+      location: 'https://github.com/openshift/installer.git'
+      type: git
+    clonePath: src/github.com/openshift/installer/
+attributes:
+  persistVolumes: 'false'
+components:
+  - id: ms-vscode/go/latest
+    memoryLimit: 512Mi
+    type: chePlugin
+    alias: go-plugin
+  - mountSources: true
+    memoryLimit: 1536Mi
+    type: dockerimage
+    alias: go-cli
+    image: 'quay.io/eclipse/che-golang-1.12:nightly'
+    env:
+      - value: '/go:$(CHE_PROJECTS_ROOT)'
+        name: GOPATH
+      - value: /tmp/.cache
+        name: GOCACHE
+apiVersion: 1.0.0
+commands:
+  - name: build
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/src/github.com/openshift/installer'
+        type: exec
+        command: ./hack/build.sh
+        component: go-cli
+  - name: fmt
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/src/github.com/openshift/installer'
+        type: exec
+        command: ./hack/go-fmt.sh
+        component: go-cli
