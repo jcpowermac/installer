@@ -45,32 +45,12 @@ EOF
   }
 }
 
-data "ignition_systemd_unit" "restart" {
-  count = "${var.instance_count}"
-
-  name = "restart.service"
-
-  content = <<EOF
-[Unit]
-ConditionFirstBoot=yes
-[Service]
-Type=idle
-ExecStart=/sbin/reboot
-[Install]
-WantedBy=multi-user.target
-EOF
-}
-
 data "ignition_config" "ign" {
   count = "${var.instance_count}"
 
   append {
-    source = "${var.ignition_url != "" ? var.ignition_url : local.ignition_encoded}"
+    source = "${local.ignition_encoded}"
   }
-
-  systemd = [
-    "${data.ignition_systemd_unit.restart.*.id[count.index]}",
-  ]
 
   files = [
     "${data.ignition_file.hostname.*.id[count.index]}",
