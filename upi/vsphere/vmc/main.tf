@@ -69,7 +69,7 @@ module "aws" {
   //TODO: Or add bootstrap_complete var
 
   // IP addresses for each type of RHCOS virtual machine
-  bootstrap_ip_address       = element(module.ipam_bootstrap.ip_addresses,0) //there should only be one
+  bootstrap_ip_address       = element(module.ipam_bootstrap.ip_addresses, 0) //there should only be one
   bootstrap_count            = local.bootstrap_count
   control_plane_ip_addresses = module.ipam_control_plane.ip_addresses
   control_plane_count        = var.control_plane_count

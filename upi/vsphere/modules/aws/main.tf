@@ -51,11 +51,11 @@ module "vpc" {
 module "bootstrap" {
   source = "./bootstrap"
 
-  instance_count           = var.bootstrap_count
-  cluster_id               = var.cluster_id
-  target_group_arns        = module.vpc.aws_lb_target_group_arns
-  target_group_arns_length = module.vpc.aws_lb_target_group_arns_length
-  availability_zone        = var.aws_availability_zone
+  instance_count    = var.bootstrap_count
+  cluster_id        = var.cluster_id
+  target_group_arns = module.vpc.aws_lb_target_group_arns
+  //  target_group_arns_length = module.vpc.aws_lb_target_group_arns_length
+  availability_zone = var.aws_availability_zone
 
   ip_address = var.bootstrap_ip_address
 
@@ -69,11 +69,11 @@ module "control_plane" {
 
   tags = local.tags
 
-  instance_count           = var.control_plane_count
-  ip_addresses             = var.control_plane_ip_addresses
-  target_group_arns        = module.vpc.aws_lb_target_group_arns
-  target_group_arns_length = module.vpc.aws_lb_target_group_arns_length
-  availability_zone        = var.aws_availability_zone
+  instance_count    = var.control_plane_count
+  ip_addresses      = var.control_plane_ip_addresses
+  target_group_arns = module.vpc.aws_lb_target_group_arns
+  //  target_group_arns_length = module.vpc.aws_lb_target_group_arns_length
+  availability_zone = var.aws_availability_zone
 }
 
 module "compute" {
@@ -83,10 +83,10 @@ module "compute" {
 
   tags = local.tags
 
-  instance_count           = var.compute_count
-  ip_addresses             = var.compute_ip_addresses
-  target_group_arns        = module.vpc.aws_lb_target_group_arns
-  target_group_arns_length = module.vpc.aws_lb_target_group_arns_length
-  availability_zone        = var.aws_availability_zone
+  instance_count    = var.compute_count
+  ip_addresses      = var.compute_ip_addresses
+  target_group_arns = module.vpc.aws_lb_target_group_arns
+  //  target_group_arns_length = module.vpc.aws_lb_target_group_arns_length
+  availability_zone = var.aws_availability_zone
 }
 
