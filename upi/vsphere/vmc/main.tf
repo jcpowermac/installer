@@ -23,7 +23,7 @@ module "ipam_bootstrap" {
   machine_cidr = var.machine_cidr
 
   // If we already assigned addresses return those
-  ip_addresses = [compact([var.bootstrap_ip_address])]
+  ip_addresses = flatten([var.bootstrap_ip_address])
 
   // Full domain of the OpenShift cluster
   cluster_domain = var.cluster_domain
@@ -69,7 +69,7 @@ module "aws" {
   //TODO: Or add bootstrap_complete var
 
   // IP addresses for each type of RHCOS virtual machine
-  bootstrap_ip_address       = module.ipam_bootstrap.ip_addresses[0] //there should only be one
+  bootstrap_ip_address       = element(module.ipam_bootstrap.ip_addresses,0) //there should only be one
   bootstrap_count            = local.bootstrap_count
   control_plane_ip_addresses = module.ipam_control_plane.ip_addresses
   control_plane_count        = var.control_plane_count

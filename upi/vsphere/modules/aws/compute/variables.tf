@@ -1,23 +1,23 @@
 variable "cluster_id" {
-  type = "string"
+  type = string
 }
 
 variable "availability_zone" {
-  type = "string"
+  type = string
 }
 
 variable "instance_count" {
-  type = "string"
+  type = string
 }
 
 variable "tags" {
-  type        = "map"
+  type        = map(string)
   default     = {}
   description = "AWS tags to be applied to created resources."
 }
 
 variable "target_group_arns" {
-  type        = "list"
+  type        = list(string)
   default     = []
   description = "The list of target group ARNs for the load balancer."
 }
@@ -27,5 +27,6 @@ variable "target_group_arns_length" {
 }
 
 variable "ip_addresses" {
-  type = "list"
+  type = list(string)
 }
+

@@ -1,22 +1,22 @@
 variable "machine_cidr" {
-  type = "string"
+  type = string
 }
 
 variable "vpc_id" {
-  type = "string"
+  type = string
 }
 
 variable "availability_zones" {
-  type        = "list"
+  type        = list(string)
   description = "The availability zones in which to provision subnets."
 }
 
 variable "cidr_block" {
-  type = "string"
+  type = string
 }
 
 variable "cluster_id" {
-  type = "string"
+  type = string
 }
 
 variable "private_control_plane_endpoints" {
@@ -30,20 +30,21 @@ variable "public_control_plane_endpoints" {
 }
 
 variable "region" {
-  type        = "string"
+  type        = string
   description = "The target AWS region for the cluster."
 }
 
 variable "tags" {
-  type        = "map"
+  type        = map(string)
   default     = {}
   description = "AWS tags to be applied to created resources."
 }
 
 variable "public_subnet_id" {
-  type = "list"
+  type = list(string)
 }
 
-variable private_subnet_id {
-  type = "list"
+variable "private_subnet_id" {
+  type = list(string)
 }
+
