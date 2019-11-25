@@ -1,32 +1,33 @@
 variable "name" {
-  type = "string"
+  type = string
 }
 
 variable "instance_count" {
-  type = "string"
+  type = string
 }
 
 variable "ignition" {
-  type    = "string"
+  type    = string
   default = ""
 }
 
 variable "cluster_domain" {
-  type = "string"
+  type = string
 }
 
 variable "machine_cidr" {
-  type = "string"
+  type = string
 }
 
 variable "ipam" {
-  type = "string"
+  type = string
 }
 
 variable "ipam_token" {
-  type = "string"
+  type = string
 }
 
 variable "ip_addresses" {
-  type = "list"
+  type = list(string)
 }
+

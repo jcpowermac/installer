@@ -1,60 +1,61 @@
 variable "name" {
-  type = "string"
+  type = string
 }
 
 variable "instance_count" {
-  type = "string"
+  type = string
 }
 
 variable "ignition" {
-  type    = "string"
+  type    = string
   default = ""
 }
 
 variable "resource_pool_id" {
-  type = "string"
+  type = string
 }
 
 variable "folder" {
-  type = "string"
+  type = string
 }
 
 variable "datastore" {
-  type = "string"
+  type = string
 }
 
 variable "network" {
-  type = "string"
+  type = string
 }
 
 variable "cluster_domain" {
-  type = "string"
+  type = string
 }
 
 variable "datacenter_id" {
-  type = "string"
+  type = string
 }
 
 variable "template" {
-  type = "string"
+  type = string
 }
 
 variable "machine_cidr" {
-  type = "string"
+  type = string
 }
 
 variable "ip_addresses" {
-  type = "list"
+  type = list(string)
 }
 
 variable "memory" {
-  type = "string"
+  type = string
 }
 
 variable "num_cpu" {
-  type = "string"
+  type = string
 }
 
 variable "dns_addresses" {
-  type = "list"
+  type = list(string)
 }
+
