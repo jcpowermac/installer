@@ -1,7 +1,3 @@
-locals {
-  bootstrap_count = var.bootstrap_complete ? 0 : 1
-}
-
 // Request from phpIPAM a new IP address for the bootstrap node
 module "ipam_bootstrap" {
   source = "./modules/ipam"
@@ -11,7 +7,7 @@ module "ipam_bootstrap" {
 
   // Only have a single bootstrap virtual machine
   // And once bootstrap is complete remove it
-  instance_count = local.bootstrap_count
+  instance_count = 1
 
   // Hostname or IP address of the phpIPAM server
   ipam = var.ipam
@@ -70,7 +66,7 @@ module "aws" {
 
   // IP addresses for each type of RHCOS virtual machine
   bootstrap_ip_address       = element(module.ipam_bootstrap.ip_addresses, 0) //there should only be one
-  bootstrap_count            = local.bootstrap_count
+  bootstrap_count            = 1
   control_plane_ip_addresses = module.ipam_control_plane.ip_addresses
   control_plane_count        = var.control_plane_count
   compute_ip_addresses       = module.ipam_compute.ip_addresses
@@ -105,9 +101,9 @@ module "rhcos" {
   vm_dns_addresses   = var.vm_dns_addresses
 
   // Virtual Machine type variables
-  bootstrap_ip_address    = module.ipam_bootstrap.ip_addresses[0]
+  bootstrap_ip_address    = element(module.ipam_bootstrap.ip_addresses, 0) //there should only be one
   bootstrap_ignition_path = var.bootstrap_ignition_path
-  bootstrap_count         = local.bootstrap_count
+  bootstrap_count         = 1
 
   control_plane_ip_addresses  = module.ipam_control_plane.ip_addresses
   control_plane_ignition_path = var.control_plane_ignition_path
