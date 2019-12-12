@@ -310,6 +310,10 @@ then
 		cp mco-bootstrap/openstack/manifests/* /etc/kubernetes/manifests/
 		cp --recursive mco-bootstrap/openstack/static-pod-resources/* /etc/kubernetes/static-pod-resources/
 	fi
+	if [ -d mco-bootstrap/vsphere/manifests ]; then
+		cp mco-bootstrap/vsphere/manifests/* /etc/kubernetes/manifests/
+		cp --recursive mco-bootstrap/vsphere/static-pod-resources/* /etc/kubernetes/static-pod-resources/
+	fi
 	cp mco-bootstrap/manifests/* manifests/
 
 	# /etc/ssl/mcs/tls.{crt, key} are locations for MachineConfigServer's tls assets.

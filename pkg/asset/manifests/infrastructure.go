@@ -143,6 +143,11 @@ func (i *Infrastructure) Generate(dependencies asset.Parents) error {
 		}
 	case vsphere.Name:
 		config.Status.PlatformStatus.Type = configv1.VSpherePlatformType
+		config.Status.PlatformStatus.VSphere = &configv1.VSpherePlatformStatus{
+			APIServerInternalIP: installConfig.Config.Platform.VSphere.APIVIP,
+			NodeDNSIP:           installConfig.Config.Platform.VSphere.DNSVIP,
+			IngressIP:           installConfig.Config.Platform.VSphere.IngressVIP,
+		}
 	default:
 		config.Status.PlatformStatus.Type = configv1.NonePlatformType
 	}

@@ -182,6 +182,17 @@ func extractHostAddresses(config *types.InstallConfig, tfstate *terraform.State)
 		if err != nil {
 			logrus.Error(err)
 		}
+/*
+	case vspheretypes.Name:
+		bootstrap, err = gatheropenstack.BootstrapIP(tfstate)
+		if err != nil {
+			return bootstrap, port, masters, err
+		}
+		masters, err = gatheropenstack.ControlPlaneIPs(tfstate)
+		if err != nil {
+			logrus.Error(err)
+		}
+*/
 	default:
 		return "", port, nil, errUnSupportedGatherPlatform{Message: fmt.Sprintf("Cannot fetch the bootstrap and control plane host addresses from state file for %s platform", config.Platform.Name())}
 	}
