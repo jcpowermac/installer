@@ -42,10 +42,6 @@ resource "vsphere_virtual_machine" "vm" {
     template_uuid = data.vsphere_virtual_machine.template.id
   }
 
-// TODO: this might be need to be changed.  How is ignition
-// configured in IPI.  Does the hostname need to be defined for
-// OS?
-
   extra_config = {
     "guestinfo.ignition.config.data"          = base64encode(data.ignition_config.ign[count.index].rendered)
     "guestinfo.ignition.config.data.encoding" = "base64"
