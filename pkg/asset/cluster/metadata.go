@@ -75,7 +75,9 @@ func (m *Metadata) Generate(parents asset.Parents) (err error) {
 		metadata.ClusterPlatformMetadata.GCP = gcp.Metadata(installConfig.Config)
 	case baremetaltypes.Name:
 		metadata.ClusterPlatformMetadata.BareMetal = baremetal.Metadata(installConfig.Config)
-	case nonetypes.Name, vspheretypes.Name:
+	case vspheretypes.Name:
+		metadata.ClusterPlatformMetadata.VSphere = vsphere.Metadata(installConfig.Config)
+	case nonetypes.Name:
 	default:
 		return errors.Errorf("no known platform")
 	}

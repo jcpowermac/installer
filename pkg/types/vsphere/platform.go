@@ -13,7 +13,10 @@ type Platform struct {
 	// DefaultDatastore is the default datastore to use for provisioning volumes.
 	DefaultDatastore string `json:"defaultDatastore"`
 
-    // TODO: template?
+    // ADD:
+    // - template
+    // - port group (network)
+
 
 	// APIVIP is the VIP to use for internal API communication
 	APIVIP string `json:"apiVIP,omitempty"`
