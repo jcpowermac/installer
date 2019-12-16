@@ -17,7 +17,8 @@ type Platform struct {
 	// Template is the virtual machine or template that will be used when cloning to
 	// create a new virtual machine.
 	Template string `json:"template"`
-	// ResourcePool is the resource pool that will be used or created
+	// ResourcePool is the resource pool that will be used.
+	// If empty a RP will not be used.  RP will not be created
 	ResourcePool string `json:"resourcePool,omitempty"`
 	// Folder is the the folder that will be used or created to contain the cluster virtual machines
 	Folder string `json:"folder,omitempty"`
