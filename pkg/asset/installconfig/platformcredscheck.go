@@ -12,6 +12,7 @@ import (
 	gcpconfig "github.com/openshift/installer/pkg/asset/installconfig/gcp"
 	openstackconfig "github.com/openshift/installer/pkg/asset/installconfig/openstack"
 	ovirtconfig "github.com/openshift/installer/pkg/asset/installconfig/ovirt"
+	vsphereconfig "github.com/openshift/installer/pkg/asset/installconfig/vsphere"
 	"github.com/openshift/installer/pkg/types/aws"
 	"github.com/openshift/installer/pkg/types/azure"
 	"github.com/openshift/installer/pkg/types/baremetal"
@@ -68,7 +69,18 @@ func (a *PlatformCredsCheck) Generate(dependencies asset.Parents) error {
 		}
 	case openstack.Name:
 		_, err = openstackconfig.GetSession(ic.Config.Platform.OpenStack.Cloud)
-	case baremetal.Name, libvirt.Name, none.Name, vsphere.Name:
+	case vsphere.Name:
+		// This should work for both UPI and IPI
+		// TODO: Add vCenter check
+		// TODO: Add vCenter permissions check
+		ssn, err := vsphereconfig.GetSession(ctx, ic.Config.Platform.VSphere)
+		if err != nil {
+			return errors.Wrap(err, "creating vSphere connection")
+		}
+
+
+
+	case baremetal.Name, libvirt.Name, none.Name:
 		// no creds to check
 	case azure.Name:
 		_, err = azureconfig.GetSession()
