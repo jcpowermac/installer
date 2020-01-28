@@ -860,10 +860,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6985ae3d34c74a894dbafce8895c02d7913b26f2e502653a769215cfd1fdc9e3"
+  digest = "1:e56e8f5ae0a896aa7b1c84138afc50c20d21f0402724a849ac8e38cedd678e01"
   name = "github.com/vmware/govmomi"
   packages = [
     ".",
+    "find",
+    "list",
     "nfc",
     "object",
     "property",
@@ -1520,6 +1522,7 @@
     "github.com/stretchr/testify/assert",
     "github.com/vincent-petithory/dataurl",
     "github.com/vmware/govmomi",
+    "github.com/vmware/govmomi/find",
     "github.com/vmware/govmomi/object",
     "github.com/vmware/govmomi/property",
     "github.com/vmware/govmomi/vapi/rest",
