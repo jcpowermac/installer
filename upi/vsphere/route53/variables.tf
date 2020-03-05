@@ -1,33 +1,33 @@
 variable "cluster_domain" {
   description = "The domain for the cluster that all DNS records must belong"
-  type        = "string"
+  type        = string
 }
 
 variable "base_domain" {
   description = "The base domain used for public records."
-  type        = "string"
+  type        = string
 }
 
 variable "bootstrap_count" {
-  type = "string"
+  type = string
 }
 
 variable "bootstrap_ips" {
-  type = "list"
+  type = list(string)
 }
 
 variable "control_plane_count" {
-  type = "string"
+  type = string
 }
 
 variable "control_plane_ips" {
-  type = "list"
+  type = list(string)
 }
 
 variable "compute_count" {
-  type = "string"
+  type = string
 }
 
 variable "compute_ips" {
-  type = "list"
+  type = list(string)
 }
