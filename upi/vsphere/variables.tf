@@ -1,3 +1,15 @@
+
+variable "bootstrap_ignition_path" {
+  type = string
+}
+variable "control_plane_ignition_path" {
+  type = string
+}
+variable "compute_ignition_path" {
+  type = string
+}
+
+
 //////
 // vSphere variables
 //////
@@ -87,9 +99,11 @@ variable "bootstrap_complete" {
   default = "false"
 }
 
+/*
 variable "bootstrap_ignition_url" {
   type = string
 }
+*/
 
 variable "bootstrap_ip" {
   type    = string
