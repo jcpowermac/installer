@@ -33,11 +33,18 @@ EOF
 
   }
 
+  triggers = {
+    cluster_domain = var.cluster_domain
+    ipam           = var.ipam
+    ipam_token     = var.ipam_token
+    name           = var.name
+  }
+
   provisioner "local-exec" {
     when = destroy
 
     command = <<EOF
-curl -s "http://${var.ipam}/api/removeHost.php?apiapp=address&apitoken=${var.ipam_token}&host=${var.name}-${count.index}.${var.cluster_domain}"
+curl -s "http://${self.triggers.ipam}/api/removeHost.php?apiapp=address&apitoken=${self.triggers.ipam_token}&host=${self.triggers.name}-${count.index}.${self.triggers.cluster_domain}"
 EOF
 
   }
