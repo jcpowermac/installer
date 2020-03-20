@@ -9,7 +9,7 @@ data "ignition_systemd_unit" "hostname-systemd" {
 }
 
 data "ignition_config" "ign" {
-  //count = var.instance_count
+  count = var.instance_count
 
   append {
     source = local.ignition_encoded
