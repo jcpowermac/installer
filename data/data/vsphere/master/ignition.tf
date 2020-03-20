@@ -3,7 +3,7 @@ locals {
 }
 
 data "ignition_systemd_unit" "hostname-systemd" {
-  name    = "vsphere-hostname-vmtoolsd"
+  name    = "vsphere-hostname-vmtoolsd.service"
   content = "[Unit]\nAfter=vmtoolsd.service\n[Service]\nType=oneshot\nExecStart=/usr/bin/hostnamectl --static set-hostname $(/usr/bin/vmtoolsd --cmd 'info-get guestinfo.hostname')\nExecStart=/usr/bin/hostnamectl --transient set-hostname $(/usr/bin/vmtoolsd --cmd 'info-get guestinfo.hostname')\n[Install]\nWantedBy=multi-user.target"
 
 }
