@@ -2,27 +2,21 @@ locals {
   ignition_encoded = "data:text/plain;charset=utf-8;base64,${base64encode(var.ignition)}"
 }
 
-data "ignition_file" "hostname" {
-  count = var.instance_count
+data "ignition_systemd_unit" "hostname-systemd" {
+  name    = "vsphere-hostname-vmtoolsd"
+  content = "[Unit]\nAfter=vmtoolsd.service\n[Service]\nType=oneshot\nExecStart=/usr/bin/hostnamectl --static set-hostname $(/usr/bin/vmtoolsd --cmd 'info-get guestinfo.hostname')\nExecStart=/usr/bin/hostnamectl --transient set-hostname $(/usr/bin/vmtoolsd --cmd 'info-get guestinfo.hostname')\n[Install]\nWantedBy=multi-user.target"
 
-  filesystem = "root"
-  path       = "/etc/hostname"
-  mode       = "420"
-
-  content {
-    content = "${var.name}-${count.index}"
-  }
 }
 
 data "ignition_config" "ign" {
-  count = var.instance_count
+  //count = var.instance_count
 
   append {
     source = local.ignition_encoded
   }
 
-  files = [
-    data.ignition_file.hostname[count.index].rendered
+  systemd = [
+    data.ignition_systemd_unit.hostname-systemd.rendered,
   ]
 }
 

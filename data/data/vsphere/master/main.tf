@@ -32,6 +32,7 @@ resource "vsphere_virtual_machine" "vm" {
   extra_config = {
     "guestinfo.ignition.config.data"          = base64encode(data.ignition_config.ign[count.index].rendered)
     "guestinfo.ignition.config.data.encoding" = "base64"
+    "guestinfo.hostname"                      = "${var.cluster_id}-${var.name}-${count.index}"
   }
 
   tags = var.tags
