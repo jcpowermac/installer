@@ -1,0 +1,12 @@
+[Unit]
+Description=vSphere vmtoolsd guestinfo hostname
+After=vmtoolsd.service
+Before=kubelet.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/vsphere-hostname.sh
+
+[Install]
+WantedBy=multi-user.target
+
