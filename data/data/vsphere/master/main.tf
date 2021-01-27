@@ -24,6 +24,12 @@ resource "vsphere_virtual_machine" "vm" {
     eagerly_scrub    = var.scrub_disk
     thin_provisioned = var.thin_disk
   }
+  disk {
+    label            = "disk1"
+    size             = 32
+    eagerly_scrub    = var.scrub_disk
+    thin_provisioned = var.thin_disk
+  }
 
   clone {
     template_uuid = var.template
