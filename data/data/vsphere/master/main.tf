@@ -10,6 +10,7 @@ resource "vsphere_virtual_machine" "vm" {
   guest_id             = var.guest_id
   folder               = var.folder
   enable_disk_uuid     = "true"
+  scsi_controller_count = 2
 
   wait_for_guest_net_timeout  = "0"
   wait_for_guest_net_routable = "false"
@@ -18,17 +19,21 @@ resource "vsphere_virtual_machine" "vm" {
     network_id = var.network
   }
 
+
   disk {
     label            = "disk0"
     size             = var.disk_size
     eagerly_scrub    = var.scrub_disk
     thin_provisioned = var.thin_disk
+    unit_number      = 0
   }
   disk {
     label            = "disk1"
     size             = 32
     eagerly_scrub    = var.scrub_disk
     thin_provisioned = var.thin_disk
+    unit_number      = 15
+
   }
 
   clone {
