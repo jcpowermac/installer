@@ -142,6 +142,24 @@ func convertDeploymentZonesToMap(values []vtypes.DeploymentZone) map[string]*vty
 		tempValue := &values[i]
 		deploymentZoneMap[tempValue.Name] = tempValue
 	}
+
+	// If there are no DeploymentZones we are in the legacy
+	// non-zonal installation
+	if len(values) == 0 {
+
+		placementConstraint := vtypes.PlacementConstraint{
+			Folder:       "folder",
+			ResourcePool: "/some/rp/somewhere",
+		}
+
+		deploymentZoneMap["non-zonal"] = &vtypes.DeploymentZone{
+			Name:                "non-zonal",
+			Server:              "non-zonal",
+			FailureDomain:       "non-zonal",
+			PlacementConstraint: placementConstraint,
+		}
+	}
+
 	return deploymentZoneMap
 }
 
@@ -189,6 +207,37 @@ func convertFailureZoneToMap(values []vtypes.FailureDomain) map[string]vtypes.Fa
 	for _, v := range values {
 		failureDomainMap[v.Name] = v
 	}
+
+	if len(values) == 0 {
+
+		region := vtypes.FailureDomainCoordinate{
+			Name:        "non-zonal-region",
+			Type:        vtypes.DatacenterFailureDomain,
+			TagCategory: "openshift-region",
+		}
+		zone := vtypes.FailureDomainCoordinate{
+			Name:        "non-zonal-zone",
+			Type:        vtypes.ComputeClusterFailureDomain,
+			TagCategory: "openshift-zone",
+		}
+		topology := vtypes.Topology{
+			Datacenter:     "datacenter",
+			ComputeCluster: "cluster",
+			//Networks
+			Datastore: "datastore",
+		}
+
+		tempFailureDomain := vtypes.FailureDomain{
+			Name:     "non-zonal",
+			Zone:     zone,
+			Region:   region,
+			Topology: topology,
+		}
+
+		failureDomainMap["non-zonal"] = tempFailureDomain
+
+	}
+
 	return failureDomainMap
 }
 
