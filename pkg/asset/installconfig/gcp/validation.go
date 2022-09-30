@@ -3,6 +3,7 @@ package gcp
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"net"
 	"net/http"
 	"strings"
@@ -57,22 +58,26 @@ func Validate(client API, ic *types.InstallConfig) error {
 func ValidateInstanceType(client API, fieldPath *field.Path, project, zone, instanceType string, req resourceRequirements) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	typeMeta, err := client.GetMachineType(context.TODO(), project, zone, instanceType)
-	if err != nil {
-		if _, ok := err.(*googleapi.Error); ok {
-			return append(allErrs, field.Invalid(fieldPath.Child("type"), instanceType, err.Error()))
-		}
-		return append(allErrs, field.InternalError(nil, err))
-	}
+	spew.Dump(zone)
 
-	if typeMeta.GuestCpus < req.minimumVCpus {
-		errMsg := fmt.Sprintf("instance type does not meet minimum resource requirements of %d vCPUs", req.minimumVCpus)
-		allErrs = append(allErrs, field.Invalid(fieldPath.Child("type"), instanceType, errMsg))
-	}
-	if typeMeta.MemoryMb < req.minimumMemory {
-		errMsg := fmt.Sprintf("instance type does not meet minimum resource requirements of %d MB Memory", req.minimumMemory)
-		allErrs = append(allErrs, field.Invalid(fieldPath.Child("type"), instanceType, errMsg))
-	}
+	/*
+		typeMeta, err := client.GetMachineType(context.TODO(), project, zone, instanceType)
+		if err != nil {
+			if _, ok := err.(*googleapi.Error); ok {
+				return append(allErrs, field.Invalid(fieldPath.Child("type"), instanceType, err.Error()))
+			}
+			return append(allErrs, field.InternalError(nil, err))
+		}
+
+		if typeMeta.GuestCpus < req.minimumVCpus {
+			errMsg := fmt.Sprintf("instance type does not meet minimum resource requirements of %d vCPUs", req.minimumVCpus)
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("type"), instanceType, errMsg))
+		}
+		if typeMeta.MemoryMb < req.minimumMemory {
+			errMsg := fmt.Sprintf("instance type does not meet minimum resource requirements of %d MB Memory", req.minimumMemory)
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("type"), instanceType, errMsg))
+		}
+	*/
 
 	return allErrs
 }
