@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	igntypes "github.com/coreos/ignition/v2/config/v3_2/types"
-	coreosarch "github.com/coreos/stream-metadata-go/arch"
 	"github.com/ghodss/yaml"
 	ibmcloudprovider "github.com/openshift/cluster-api-provider-ibmcloud/pkg/apis/ibmcloudprovider/v1"
 	libvirtprovider "github.com/openshift/cluster-api-provider-libvirt/pkg/apis/libvirtproviderconfig/v1beta1"
@@ -35,7 +34,6 @@ import (
 	"github.com/openshift/installer/pkg/asset/manifests"
 	"github.com/openshift/installer/pkg/asset/openshiftinstall"
 	"github.com/openshift/installer/pkg/asset/rhcos"
-	rhcospkg "github.com/openshift/installer/pkg/rhcos"
 	"github.com/openshift/installer/pkg/tfvars"
 	alibabacloudtfvars "github.com/openshift/installer/pkg/tfvars/alibabacloud"
 	awstfvars "github.com/openshift/installer/pkg/tfvars/aws"
@@ -457,24 +455,29 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 			privateZoneProject = installConfig.Config.GCP.PrivateDNSZone.ProjectID
 		}
 
-		archName := coreosarch.RpmArch(string(installConfig.Config.ControlPlane.Architecture))
-		st, err := rhcospkg.FetchCoreOSBuild(ctx)
-		if err != nil {
-			return err
-		}
-		streamArch, err := st.GetArchitecture(archName)
-		if err != nil {
-			return err
-		}
+		/*
+			archName := coreosarch.RpmArch(string(installConfig.Config.ControlPlane.Architecture))
+			st, err := rhcospkg.FetchCoreOSBuild(ctx)
+			if err != nil {
+				return err
+			}
+			streamArch, err := st.GetArchitecture(archName)
+			if err != nil {
+				return err
+			}
 
-		img := streamArch.Images.Gcp
-		if img == nil {
-			return fmt.Errorf("%s: No GCP build found", st.FormatPrefix(archName))
-		}
-		// For backwards compatibility, we generate this URL to the image (only applies to RHCOS, not FCOS/OKD)
-		// right now.  It will only be used if nested virt or other licenses are enabled, which we
-		// really should deprecate and remove - xref https://github.com/openshift/installer/pull/4696
-		imageURL := fmt.Sprintf("https://storage.googleapis.com/rhcos/rhcos/%s.tar.gz", img.Name)
+			img := streamArch.Images.Gcp
+			if img == nil {
+				return fmt.Errorf("%s: No GCP build found", st.FormatPrefix(archName))
+			}
+			// For backwards compatibility, we generate this URL to the image (only applies to RHCOS, not FCOS/OKD)
+			// right now.  It will only be used if nested virt or other licenses are enabled, which we
+			// really should deprecate and remove - xref https://github.com/openshift/installer/pull/4696
+			imageURL := fmt.Sprintf("https://storage.googleapis.com/rhcos/rhcos/%s.tar.gz", img.Name)
+		*/
+
+		imageURL := "https://storage.cloud.google.com/jcallen/rhcos-aarch64/rhcos412aarch64.tar.gz"
+
 		data, err := gcptfvars.TFVars(
 			gcptfvars.TFVarsSources{
 				Auth:                     auth,
