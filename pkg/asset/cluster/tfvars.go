@@ -476,7 +476,7 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 			imageURL := fmt.Sprintf("https://storage.googleapis.com/rhcos/rhcos/%s.tar.gz", img.Name)
 		*/
 
-		imageURL := "https://storage.cloud.google.com/jcallen/rhcos-aarch64/rhcos412aarch64.tar.gz"
+		imageURL := "https://www.googleapis.com/compute/v1/projects/openshift-gce-devel/global/images/rhcos412aarch64"
 
 		data, err := gcptfvars.TFVars(
 			gcptfvars.TFVarsSources{
