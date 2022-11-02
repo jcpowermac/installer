@@ -206,11 +206,13 @@ func (i *Infrastructure) Generate(dependencies asset.Parents) error {
 	case vsphere.Name:
 		config.Spec.PlatformSpec.Type = configv1.VSpherePlatformType
 		if len(installConfig.Config.VSphere.APIVIPs) > 0 {
-			config.Status.PlatformStatus.VSphere = &configv1.VSpherePlatformStatus{
-				APIServerInternalIP:  installConfig.Config.VSphere.APIVIPs[0],
-				IngressIP:            installConfig.Config.VSphere.IngressVIPs[0],
-				APIServerInternalIPs: installConfig.Config.VSphere.APIVIPs,
-				IngressIPs:           installConfig.Config.VSphere.IngressVIPs,
+			if installConfig.Config.VSphere.LoadBalancer != "External" {
+				config.Status.PlatformStatus.VSphere = &configv1.VSpherePlatformStatus{
+					APIServerInternalIP:  installConfig.Config.VSphere.APIVIPs[0],
+					IngressIP:            installConfig.Config.VSphere.IngressVIPs[0],
+					APIServerInternalIPs: installConfig.Config.VSphere.APIVIPs,
+					IngressIPs:           installConfig.Config.VSphere.IngressVIPs,
+				}
 			}
 		}
 		config.Spec.PlatformSpec.VSphere = vsphereinfra.GetInfraPlatformSpec(installConfig)

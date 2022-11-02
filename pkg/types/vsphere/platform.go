@@ -1,5 +1,10 @@
 package vsphere
 
+// LoadBalancerType is either an external or the
+// internal MCO deployed LB
+// +kubebuilder:validation:Enum=Internal;External
+type LoadBalancerType string
+
 // DiskType is a disk provisioning type for vsphere.
 // +kubebuilder:validation:Enum="";thin;thick;eagerZeroedThick
 type DiskType string
@@ -19,25 +24,31 @@ const (
 
 	// DiskTypeEagerZeroedThick uses EagerZeroedThick disk provisioning type for vsphere in the cluster.
 	DiskTypeEagerZeroedThick DiskType = "eagerZeroedThick"
+
+	//LoadBalancerTypeExternal
+	LoadBalancerTypeExternal LoadBalancerType = "External"
+
+	// LoadBalancerTypeInternal
+	LoadBalancerTypeInternal LoadBalancerType = "Internal"
 )
 
 // Platform stores any global configuration used for vsphere platforms
 type Platform struct {
 	// VCenter is the domain name or IP address of the vCenter.
-	VCenter string `json:"vCenter"`
+	VCenter string `json:"vCenter,omitempty"`
 	// Username is the name of the user to use to connect to the vCenter.
-	Username string `json:"username"`
+	Username string `json:"username,omitempty"`
 	// Password is the password for the user to use to connect to the vCenter.
-	Password string `json:"password"`
+	Password string `json:"password,omitempty"`
 	// Datacenter is the name of the datacenter to use in the vCenter.
-	Datacenter string `json:"datacenter"`
+	Datacenter string `json:"datacenter,omitempty"`
 	// DefaultDatastore is the default datastore to use for provisioning volumes.
-	DefaultDatastore string `json:"defaultDatastore"`
+	DefaultDatastore string `json:"defaultDatastore,omitempty"`
 	// Folder is the absolute path of the folder that will be used and/or created for
 	// virtual machines. The absolute path is of the form /<datacenter>/vm/<folder>/<subfolder>.
-	Folder string `json:"folder,omitempty"`
+	Folder string `json:"folder,omitempty,omitempty"`
 	// Cluster is the name of the cluster virtual machines will be cloned into.
-	Cluster string `json:"cluster,omitempty"`
+	Cluster string `json:"cluster,omitempty,omitempty"`
 	// ResourcePool is the absolute path of the resource pool where virtual machines will be
 	// created. The absolute path is of the form /<datacenter>/host/<cluster>/Resources/<resourcepool>.
 	ResourcePool string `json:"resourcePool,omitempty"`
@@ -101,6 +112,8 @@ type Platform struct {
 	// FailureDomains is available in TechPreview.
 	// +kubebuilder:validation:Optional
 	FailureDomains []FailureDomain `json:"failureDomains,omitempty"`
+
+	LoadBalancer LoadBalancerType `json:"loadBalancerType,omitempty"`
 }
 
 // FailureDomain holds the region and zone failure domain and
