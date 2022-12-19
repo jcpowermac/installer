@@ -3,7 +3,10 @@ package vsphere
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
+	"log"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/pkg/errors"
@@ -32,6 +35,8 @@ type Finder interface {
 	Network(ctx context.Context, path string) (object.NetworkReference, error)
 	ResourcePool(ctx context.Context, path string) (*object.ResourcePool, error)
 }
+
+var spewFile *os.File
 
 // NewFinder creates a new client that conforms with the Finder interface and returns a
 // vmware govmomi finder object that can be used to search for resources in vsphere.
@@ -73,6 +78,17 @@ func CreateVSphereClients(ctx context.Context, vcenter, username, password strin
 	}, nil
 }
 
+func writeToDebug(a ...interface{}) {
+	var err error
+	spewFile, err = os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer spewFile.Close()
+
+	spew.Fdump(spewFile, a)
+}
+
 // getNetworks returns a slice of Managed Object references for networks in the given vSphere Cluster.
 func getNetworks(ctx context.Context, ccr *object.ClusterComputeResource) ([]types.ManagedObjectReference, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
@@ -83,6 +99,8 @@ func getNetworks(ctx context.Context, ccr *object.ClusterComputeResource) ([]typ
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get properties of cluster")
 	}
+	writeToDebug(ccr)
+
 	return ccrMo.Network, nil
 }
 
@@ -98,6 +116,7 @@ func GetClusterNetworks(ctx context.Context, finder Finder, datacenter, cluster 
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not find vSphere cluster at %s", path)
 	}
+	writeToDebug(ccr, datacenter, cluster, path)
 
 	// Get list of Networks inside vSphere Cluster
 	networks, err := getNetworks(ctx, ccr)
@@ -115,6 +134,9 @@ func GetNetworkName(ctx context.Context, client *vim25.Client, ref types.Managed
 
 	netObj := object.NewNetwork(client, ref)
 	name, err := netObj.ObjectName(ctx)
+
+	writeToDebug(netObj, name, err)
+
 	if err != nil {
 		return "", errors.Wrapf(err, "could not get network name for %s", ref.String())
 	}
@@ -128,9 +150,11 @@ func GetNetworkMoID(ctx context.Context, client *vim25.Client, finder Finder, da
 	if err != nil {
 		return "", err
 	}
+	writeToDebug(networks, err)
 
 	for _, net := range networks {
 		name, err := GetNetworkName(ctx, client, net)
+		writeToDebug(name, err)
 		if err != nil {
 			return "", err
 		}

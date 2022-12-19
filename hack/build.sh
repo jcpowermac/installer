@@ -52,7 +52,7 @@ export CGO_ENABLED=0
 
 case "${MODE}" in
 release)
-	LDFLAGS="${LDFLAGS} -s -w"
+	#LDFLAGS="${LDFLAGS}"
 	TAGS="${TAGS} release"
 	if test "${SKIP_GENERATION}" != y
 	then
@@ -73,4 +73,4 @@ then
 fi
 
 # shellcheck disable=SC2086
-go build ${GOFLAGS} -ldflags "${LDFLAGS}" -tags "${TAGS}" -o "${OUTPUT}" ./cmd/openshift-install
+go build ${GOFLAGS} -gcflags "all=-N -l" -ldflags "${LDFLAGS}" -tags "${TAGS}" -o "${OUTPUT}" ./cmd/openshift-install
