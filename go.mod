@@ -32,7 +32,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.8
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud v0.24.0
 	github.com/gophercloud/utils v0.0.0-20220307143606-8e7800759d16
 	github.com/h2non/filetype v1.0.12
@@ -64,7 +64,7 @@ require (
 	github.com/stretchr/testify v1.7.2
 	github.com/ulikunitz/xz v0.5.8
 	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
-	github.com/vmware/govmomi v0.27.4
+	github.com/vmware/govmomi v0.30.0
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
