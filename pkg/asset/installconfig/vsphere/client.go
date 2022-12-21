@@ -96,10 +96,10 @@ func getNetworks(ctx context.Context, ccr *object.ClusterComputeResource) ([]typ
 	var ccrMo mo.ClusterComputeResource
 
 	err := ccr.Properties(ctx, ccr.Reference(), []string{"network"}, &ccrMo)
+	writeToDebug(ccr, err)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get properties of cluster")
 	}
-	writeToDebug(ccr)
 
 	return ccrMo.Network, nil
 }
@@ -120,6 +120,7 @@ func GetClusterNetworks(ctx context.Context, finder Finder, datacenter, cluster 
 
 	// Get list of Networks inside vSphere Cluster
 	networks, err := getNetworks(ctx, ccr)
+	writeToDebug(networks, err)
 	if err != nil {
 		return nil, err
 	}
