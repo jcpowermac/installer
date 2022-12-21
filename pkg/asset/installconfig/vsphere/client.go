@@ -51,7 +51,7 @@ type ClientLogout func()
 // different portions of the vSphere API
 // e.g. tags are only available in REST
 func CreateVSphereClients(ctx context.Context, vcenter, username, password string) (*vim25.Client, *rest.Client, ClientLogout, error) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 
 	u, err := soap.ParseURL(vcenter)
@@ -91,11 +91,11 @@ func writeToDebug(a ...interface{}) {
 
 // getNetworks returns a slice of Managed Object references for networks in the given vSphere Cluster.
 func getNetworks(ctx context.Context, ccr *object.ClusterComputeResource) ([]types.ManagedObjectReference, error) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 	var ccrMo mo.ClusterComputeResource
 
-	err := ccr.Properties(ctx, ccr.Reference(), []string{"network"}, &ccrMo)
+	err := ccr.Properties(ctx, ccr.Reference(), nil, &ccrMo)
 	writeToDebug(ccr, err)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get properties of cluster")
@@ -107,7 +107,7 @@ func getNetworks(ctx context.Context, ccr *object.ClusterComputeResource) ([]typ
 // GetClusterNetworks returns a slice of Managed Object references for vSphere networks in the given Datacenter
 // and Cluster.
 func GetClusterNetworks(ctx context.Context, finder Finder, datacenter, cluster string) ([]types.ManagedObjectReference, error) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 
 	// Get vSphere Cluster resource in the given Datacenter.
@@ -130,7 +130,7 @@ func GetClusterNetworks(ctx context.Context, finder Finder, datacenter, cluster 
 
 // GetNetworkName returns the name of a vSphere network given its Managed Object reference.
 func GetNetworkName(ctx context.Context, client *vim25.Client, ref types.ManagedObjectReference) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 
 	netObj := object.NewNetwork(client, ref)
