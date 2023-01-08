@@ -166,12 +166,12 @@ func ValidateForProvisioning(ic *types.InstallConfig) error {
 
 	p := ic.Platform.VSphere
 	vim25Client, _, cleanup, err := CreateVSphereClients(context.TODO(),
-		p.VCenter,
-		p.Username,
-		p.Password)
+		p.VCenters[0].Server,
+		p.VCenters[0].Username,
+		p.VCenters[0].Password)
 
 	if err != nil {
-		return errors.New(field.InternalError(field.NewPath("platform", "vsphere"), errors.Wrapf(err, "unable to connect to vCenter %s.", p.VCenter)).Error())
+		return errors.New(field.InternalError(field.NewPath("platform", "vsphere"), errors.Wrapf(err, "unable to connect to vCenter %s.", p.VCenters[0].Server)).Error())
 	}
 	defer cleanup()
 
@@ -194,8 +194,10 @@ func ValidateForProvisioning(ic *types.InstallConfig) error {
 
 func validateProvisioning(validationCtx *validationContext, ic *types.InstallConfig) error {
 	allErrs := field.ErrorList{}
+	/* TODO: fix this function...
 	platform := ic.Platform.VSphere
 	vsphereField := field.NewPath("platform").Child("vsphere")
+
 	checkDatacenterPrivileges := ic.VSphere.Folder == ""
 	checkComputeClusterPrivileges := ic.VSphere.ResourcePool == ""
 	allErrs = append(allErrs, validation.ValidateForProvisioning(platform, vsphereField)...)
@@ -231,7 +233,9 @@ func validateProvisioning(validationCtx *validationContext, ic *types.InstallCon
 		return allErrs.ToAggregate()
 	}
 
+
 	allErrs = append(allErrs, datastoreExists(validationCtx, platform.Datacenter, platform.DefaultDatastore, vsphereField.Child("defaultDatastore"))...)
+	*/
 	return allErrs.ToAggregate()
 }
 

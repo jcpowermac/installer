@@ -114,11 +114,14 @@ func MultiZoneIniCloudProviderConfig(folderPath string, p *vspheretypes.Platform
 	fmt.Fprintln(buf, "")
 
 	fmt.Fprintln(buf, "[Workspace]")
+	/* TODO: fix here
 	printIfNotEmpty(buf, "server", p.VCenter)
 	printIfNotEmpty(buf, "datacenter", p.Datacenter)
 	printIfNotEmpty(buf, "default-datastore", p.DefaultDatastore)
 	printIfNotEmpty(buf, "folder", folderPath)
 	printIfNotEmpty(buf, "resourcepool-path", p.ResourcePool)
+
+	*/
 	fmt.Fprintln(buf, "")
 
 	fmt.Fprintln(buf, "[Labels]")
@@ -141,15 +144,18 @@ func InTreeCloudProviderConfig(folderPath string, p *vspheretypes.Platform) (str
 	fmt.Fprintln(buf, "")
 
 	fmt.Fprintln(buf, "[Workspace]")
+	/* TODO: fix here
 	printIfNotEmpty(buf, "server", p.VCenter)
 	printIfNotEmpty(buf, "datacenter", p.Datacenter)
 	printIfNotEmpty(buf, "default-datastore", p.DefaultDatastore)
 	printIfNotEmpty(buf, "folder", folderPath)
 	printIfNotEmpty(buf, "resourcepool-path", p.ResourcePool)
+
 	fmt.Fprintln(buf, "")
 
 	fmt.Fprintf(buf, "[VirtualCenter %q]\n", p.VCenter)
 	printIfNotEmpty(buf, "datacenters", p.Datacenter)
+	*/
 
 	return buf.String(), nil
 }

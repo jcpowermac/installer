@@ -100,28 +100,35 @@ func getDefinedZones(platformSpec *vsphere.Platform) (map[string]*vsphere.Platfo
 	zones := make(map[string]*vsphere.Platform)
 
 	for _, failureDomain := range platformSpec.FailureDomains {
+		/* TODO: needs to be fixed
 		vCenter, err := getVCenterFromServerName(failureDomain.Server, platformSpec)
 		if err != nil {
 			return nil, err
 		}
+		*/
 		failureDomain, err := getFailureDomain(failureDomain.Name, platformSpec)
 		if err != nil {
 			return nil, err
 		}
 		var vcPlatform = vsphere.Platform{
-			VCenter:          vCenter.Server,
-			Username:         vCenter.Username,
-			Password:         vCenter.Password,
-			Datacenter:       failureDomain.Topology.Datacenter,
-			DefaultDatastore: failureDomain.Topology.Datastore,
-			Folder:           failureDomain.Topology.Folder,
-			Cluster:          failureDomain.Topology.ComputeCluster,
-			ResourcePool:     failureDomain.Topology.ResourcePool,
-			APIVIPs:          platformSpec.APIVIPs,
-			IngressVIPs:      platformSpec.IngressVIPs,
-			Network:          failureDomain.Topology.Networks[0],
-			DiskType:         platformSpec.DiskType,
-			FailureDomains:   platformSpec.FailureDomains,
+
+			// TODO: needs to be fixed
+			/*
+				VCenter:          vCenter.Server,
+				Username:         vCenter.Username,
+				Password:         vCenter.Password,
+				Datacenter:       failureDomain.Topology.Datacenter,
+				DefaultDatastore: failureDomain.Topology.Datastore,
+				Folder:           failureDomain.Topology.Folder,
+				Cluster:          failureDomain.Topology.ComputeCluster,
+				ResourcePool:     failureDomain.Topology.ResourcePool,
+				APIVIPs:          platformSpec.APIVIPs,
+				IngressVIPs:      platformSpec.IngressVIPs,
+				Network:          failureDomain.Topology.Networks[0],
+				DiskType:         platformSpec.DiskType,
+				FailureDomains:   platformSpec.FailureDomains,
+
+			*/
 		}
 		zones[failureDomain.Name] = &vcPlatform
 	}

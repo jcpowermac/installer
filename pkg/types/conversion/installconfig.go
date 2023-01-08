@@ -2,6 +2,7 @@ package conversion
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -16,6 +17,7 @@ import (
 	"github.com/openshift/installer/pkg/types/openstack"
 	"github.com/openshift/installer/pkg/types/ovirt"
 	"github.com/openshift/installer/pkg/types/vsphere"
+	vsphereconversion "github.com/openshift/installer/pkg/types/vsphere/conversion"
 )
 
 // ConvertInstallConfig is modeled after the k8s conversion schemes, which is
@@ -52,6 +54,13 @@ func ConvertInstallConfig(config *types.InstallConfig) error {
 			return err
 		}
 	case vsphere.Name:
+		if err := vsphereconversion.ConvertInstallConfig(config); err != nil {
+			return err
+		}
+
+		spew.Dump("the platform spec should change...")
+		spew.Dump(config)
+		// TODO: This should be moved...
 		if err := convertVSphere(config); err != nil {
 			return err
 		}

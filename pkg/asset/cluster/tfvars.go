@@ -880,11 +880,11 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 		}
 
 		vim25Client, _, cleanup, err := vsphereconfig.CreateVSphereClients(context.TODO(),
-			installConfig.Config.VSphere.VCenter,
-			installConfig.Config.VSphere.Username,
-			installConfig.Config.VSphere.Password)
+			installConfig.Config.VSphere.VCenters[0].Server,
+			installConfig.Config.VSphere.VCenters[0].Username,
+			installConfig.Config.VSphere.VCenters[0].Password)
 		if err != nil {
-			return errors.Wrapf(err, "unable to connect to vCenter %s. Ensure provided information is correct and client certs have been added to system trust.", installConfig.Config.VSphere.VCenter)
+			return errors.Wrapf(err, "unable to connect to vCenter %s. Ensure provided information is correct and client certs have been added to system trust.", installConfig.Config.VSphere.VCenters[0].Server)
 		}
 		defer cleanup()
 		finder := vsphereconfig.NewFinder(vim25Client)
@@ -906,6 +906,7 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 			}
 		}
 
+		/* no longer needed since all will be zonal...
 		networkID, err = vsphereconfig.GetNetworkMoID(context.TODO(),
 			vim25Client,
 			finder,
@@ -916,17 +917,24 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 			return errors.Wrap(err, "failed to get vSphere network ID")
 		}
 
+		*/
+
+		// TODO: fix me, though I think the function in vsphere/tfvars would automagically work.
 		// Set this flag to use an existing folder specified in the install-config. Otherwise, create one.
-		preexistingFolder := installConfig.Config.Platform.VSphere.Folder != ""
+		//preexistingFolder := installConfig.Config.Platform.VSphere.Folder != ""
+
+		// TODO: determine these variables
+
+		// TODO: tbh these probably can be severely pruned
 
 		data, err = vspheretfvars.TFVars(
 			vspheretfvars.TFVarsSources{
 				ControlPlaneConfigs: controlPlaneConfigs,
-				Username:            installConfig.Config.VSphere.Username,
-				Password:            installConfig.Config.VSphere.Password,
-				Cluster:             installConfig.Config.VSphere.Cluster,
+				Username:            installConfig.Config.VSphere.VCenters[0].Username,
+				Password:            installConfig.Config.VSphere.VCenters[0].Password,
+				Cluster:             "TODO-cluster",
 				ImageURL:            string(*rhcosImage),
-				PreexistingFolder:   preexistingFolder,
+				PreexistingFolder:   false,
 				DiskType:            installConfig.Config.Platform.VSphere.DiskType,
 				NetworkID:           networkID,
 

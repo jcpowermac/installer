@@ -312,6 +312,7 @@ func warnUnusedConfig(installConfig *types.InstallConfig) {
 	case vsphere.Name:
 		vspherePlatform := installConfig.Platform.VSphere
 
+		/* TODO fix below
 		if vspherePlatform.VCenter != "" {
 			fieldPath := field.NewPath("Platform", "VSphere", "VCenter")
 			logrus.Warnf(fmt.Sprintf("%s: %s is ignored", fieldPath, vspherePlatform.VCenter))
@@ -344,6 +345,7 @@ func warnUnusedConfig(installConfig *types.InstallConfig) {
 			fieldPath := field.NewPath("Platform", "VSphere", "ResourcePool")
 			logrus.Warnf(fmt.Sprintf("%s: %s is ignored", fieldPath, vspherePlatform.ResourcePool))
 		}
+		*/
 		if vspherePlatform.ClusterOSImage != "" {
 			fieldPath := field.NewPath("Platform", "VSphere", "ClusterOSImage")
 			logrus.Warnf(fmt.Sprintf("%s: %s is ignored", fieldPath, vspherePlatform.ClusterOSImage))
@@ -352,10 +354,13 @@ func warnUnusedConfig(installConfig *types.InstallConfig) {
 			fieldPath := field.NewPath("Platform", "VSphere", "DefaultMachinePlatform")
 			logrus.Warnf(fmt.Sprintf("%s: %v is ignored", fieldPath, vspherePlatform.DefaultMachinePlatform))
 		}
+		/* TODO fix below
 		if vspherePlatform.Network != "" {
 			fieldPath := field.NewPath("Platform", "VSphere", "Network")
 			logrus.Warnf(fmt.Sprintf("%s: %s is ignored", fieldPath, vspherePlatform.Network))
 		}
+
+		*/
 		if vspherePlatform.DiskType != "" {
 			fieldPath := field.NewPath("Platform", "VSphere", "DiskType")
 			logrus.Warnf(fmt.Sprintf("%s: %s is ignored", fieldPath, vspherePlatform.DiskType))

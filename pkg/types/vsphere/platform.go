@@ -23,26 +23,38 @@ const (
 
 // Platform stores any global configuration used for vsphere platforms
 type Platform struct {
+
+	// TODO: deprecated existing platform spec parameters
+	// TODO: additional validation for deprecated parameters
+
 	// VCenter is the domain name or IP address of the vCenter.
-	VCenter string `json:"vCenter"`
+	// Deprecated: Use VCenters.Server
+	DeprecatedVCenter string `json:"vCenter,omitempty"`
 	// Username is the name of the user to use to connect to the vCenter.
-	Username string `json:"username"`
+	// Deprecated: Use VCenters.Username
+	DeprecatedUsername string `json:"username,omitempty"`
 	// Password is the password for the user to use to connect to the vCenter.
-	Password string `json:"password"`
+	// Deprecated: Use VCenters.Password
+	DeprecatedPassword string `json:"password,omitempty"`
 	// Datacenter is the name of the datacenter to use in the vCenter.
-	Datacenter string `json:"datacenter"`
+	// Deprecated: Use FailureDomains.Topology.Datacenter
+	DeprecatedDatacenter string `json:"datacenter,omitempty"`
 	// DefaultDatastore is the default datastore to use for provisioning volumes.
-	DefaultDatastore string `json:"defaultDatastore"`
+	// Deprecated: Use FailureDomains.Topology.Datastore
+	DeprecatedDefaultDatastore string `json:"defaultDatastore,omitempty"`
 	// Folder is the absolute path of the folder that will be used and/or created for
 	// virtual machines. The absolute path is of the form /<datacenter>/vm/<folder>/<subfolder>.
 	// +kubebuilder:validation:Pattern=`^/.*?/vm/.*?`
 	// +optional
-	Folder string `json:"folder,omitempty"`
+	// Deprecated: Use FailureDomains.Topology.Folder
+	DeprecatedFolder string `json:"folder,omitempty,omitempty"`
 	// Cluster is the name of the cluster virtual machines will be cloned into.
-	Cluster string `json:"cluster,omitempty"`
+	// Deprecated: Use FailureDomains.Topology.Cluster
+	DeprecatedCluster string `json:"cluster,omitempty,omitempty"`
 	// ResourcePool is the absolute path of the resource pool where virtual machines will be
 	// created. The absolute path is of the form /<datacenter>/host/<cluster>/Resources/<resourcepool>.
-	ResourcePool string `json:"resourcePool,omitempty"`
+	// Deprecated: Use FailureDomains.Topology.ResourcePool
+	DeprecatedResourcePool string `json:"resourcePool,omitempty"`
 	// ClusterOSImage overrides the url provided in rhcos.json to download the RHCOS OVA
 	ClusterOSImage string `json:"clusterOSImage,omitempty"`
 
@@ -84,7 +96,8 @@ type Platform struct {
 	// +optional
 	DefaultMachinePlatform *MachinePool `json:"defaultMachinePlatform,omitempty"`
 	// Network specifies the name of the network to be used by the cluster.
-	Network string `json:"network,omitempty"`
+	// Deprecated: Use FailureDomains.Topology.Network
+	DeprecatedNetwork string `json:"network,omitempty"`
 	// DiskType is the name of the disk provisioning type,
 	// valid values are thin, thick, and eagerZeroedThick. When not
 	// specified, it will be set according to the default storage policy

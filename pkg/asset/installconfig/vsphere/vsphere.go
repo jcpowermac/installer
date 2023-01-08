@@ -4,6 +4,7 @@ package vsphere
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"sort"
 	"strings"
 	"time"
@@ -64,21 +65,29 @@ func Platform() (*vsphere.Platform, error) {
 		return nil, err
 	}
 
+	spew.Dump(datastore)
+	spew.Dump(network)
+
 	apiVIP, ingressVIP, err := getVIPs()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get VIPs")
 	}
 
+	// TODO: Create failure domain, vcenters here instead
+
 	platform := &vsphere.Platform{
-		Datacenter:       dc,
-		Cluster:          cluster,
-		DefaultDatastore: datastore,
-		Network:          network,
-		VCenter:          vCenter.VCenter,
-		Username:         vCenter.Username,
-		Password:         vCenter.Password,
-		APIVIPs:          []string{apiVIP},
-		IngressVIPs:      []string{ingressVIP},
+		/*
+			Datacenter:       dc,
+			Cluster:          cluster,
+			DefaultDatastore: datastore,
+			Network:          network,
+			VCenter:          vCenter.VCenter,
+			Username:         vCenter.Username,
+			Password:         vCenter.Password,
+
+		*/
+		APIVIPs:     []string{apiVIP},
+		IngressVIPs: []string{ingressVIP},
 	}
 	return platform, nil
 }

@@ -3,10 +3,7 @@ package vsphere
 
 import (
 	"fmt"
-	"regexp"
-
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -33,6 +30,7 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 	numOfAZs := len(azs)
 	definedZones := make(map[string]*vsphere.Platform)
 
+	// TODO: oh nos, defined zones uses the platform struct...
 	if numOfAZs > 0 {
 		zones, err := getDefinedZones(platform)
 		if err != nil {
@@ -53,6 +51,7 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 			if _, exists := definedZones[desiredZone]; !exists {
 				return nil, errors.Errorf("zone [%s] specified by machinepool is not defined", desiredZone)
 			}
+			// TODO: oh nos
 			platform = definedZones[desiredZone]
 			for idx, knownFailureDomain := range platform.FailureDomains {
 				if knownFailureDomain.Name == desiredZone {
@@ -73,6 +72,7 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 			osImageForZone = fmt.Sprintf("%s-%s-%s", osImage, failureDomain.Region, failureDomain.Zone)
 		}
 
+		// TODO: oh nos
 		provider, err := provider(clusterID, platform, mpool, osImageForZone, userDataSecret)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create provider")
@@ -101,49 +101,55 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 }
 
 func provider(clusterID string, platform *vsphere.Platform, mpool *vsphere.MachinePool, osImage string, userDataSecret string) (*machineapi.VSphereMachineProviderSpec, error) {
-	folder := fmt.Sprintf("/%s/vm/%s", platform.Datacenter, clusterID)
 
-	resourcePool := fmt.Sprintf("/%s/host/%s/Resources", platform.Datacenter, platform.Cluster)
-	resourcePoolPrefix := "^\\/(.*?)\\/host\\/(.*?)"
-	hasFullPath, _ := regexp.MatchString(resourcePoolPrefix, platform.Cluster)
-	if hasFullPath {
-		resourcePool = fmt.Sprintf("%s/Resources", platform.Cluster)
-	}
+	// TODO: this function has to change
+	/*
+		folder := fmt.Sprintf("/%s/vm/%s", platform.Datacenter, clusterID)
 
-	if platform.Folder != "" {
-		folder = platform.Folder
-	}
-	if platform.ResourcePool != "" {
-		resourcePool = platform.ResourcePool
-	}
+		resourcePool := fmt.Sprintf("/%s/host/%s/Resources", platform.Datacenter, platform.Cluster)
+		resourcePoolPrefix := "^\\/(.*?)\\/host\\/(.*?)"
+		hasFullPath, _ := regexp.MatchString(resourcePoolPrefix, platform.Cluster)
+		if hasFullPath {
+			resourcePool = fmt.Sprintf("%s/Resources", platform.Cluster)
+		}
 
-	return &machineapi.VSphereMachineProviderSpec{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: machineapi.SchemeGroupVersion.String(),
-			Kind:       "VSphereMachineProviderSpec",
-		},
-		UserDataSecret:    &corev1.LocalObjectReference{Name: userDataSecret},
-		CredentialsSecret: &corev1.LocalObjectReference{Name: "vsphere-cloud-credentials"},
-		Template:          osImage,
-		Network: machineapi.NetworkSpec{
-			Devices: []machineapi.NetworkDeviceSpec{
-				{
-					NetworkName: platform.Network,
+		if platform.Folder != "" {
+			folder = platform.Folder
+		}
+		if platform.ResourcePool != "" {
+			resourcePool = platform.ResourcePool
+		}
+
+		return &machineapi.VSphereMachineProviderSpec{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: machineapi.SchemeGroupVersion.String(),
+				Kind:       "VSphereMachineProviderSpec",
+			},
+			UserDataSecret:    &corev1.LocalObjectReference{Name: userDataSecret},
+			CredentialsSecret: &corev1.LocalObjectReference{Name: "vsphere-cloud-credentials"},
+			Template:          osImage,
+			Network: machineapi.NetworkSpec{
+				Devices: []machineapi.NetworkDeviceSpec{
+					{
+						NetworkName: platform.Network,
+					},
 				},
 			},
-		},
-		Workspace: &machineapi.Workspace{
-			Server:       platform.VCenter,
-			Datacenter:   platform.Datacenter,
-			Datastore:    platform.DefaultDatastore,
-			Folder:       folder,
-			ResourcePool: resourcePool,
-		},
-		NumCPUs:           mpool.NumCPUs,
-		NumCoresPerSocket: mpool.NumCoresPerSocket,
-		MemoryMiB:         mpool.MemoryMiB,
-		DiskGiB:           mpool.OSDisk.DiskSizeGB,
-	}, nil
+			Workspace: &machineapi.Workspace{
+				Server:       platform.VCenters[0].Server,
+				Datacenter:   platform.Datacenter,
+				Datastore:    platform.DefaultDatastore,
+				Folder:       folder,
+				ResourcePool: resourcePool,
+			},
+			NumCPUs:           mpool.NumCPUs,
+			NumCoresPerSocket: mpool.NumCoresPerSocket,
+			MemoryMiB:         mpool.MemoryMiB,
+			DiskGiB:           mpool.OSDisk.DiskSizeGB,
+		}, nil
+
+	*/
+	return nil, nil
 }
 
 // ConfigMasters sets the PublicIP flag and assigns a set of load balancers to the given machines

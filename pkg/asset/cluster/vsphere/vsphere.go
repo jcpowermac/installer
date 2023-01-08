@@ -15,10 +15,13 @@ func Metadata(config *types.InstallConfig) *typesvsphere.Metadata {
 		}
 	}
 
+	// Since currently we only support a single vCenter
+	// just use the first entry in the VCenters slice.
+
 	return &typesvsphere.Metadata{
-		VCenter:           config.VSphere.VCenter,
-		Username:          config.VSphere.Username,
-		Password:          config.VSphere.Password,
+		VCenter:           config.VSphere.VCenters[0].Server,
+		Username:          config.VSphere.VCenters[0].Username,
+		Password:          config.VSphere.VCenters[0].Password,
 		TerraformPlatform: terraformPlatform,
 	}
 }

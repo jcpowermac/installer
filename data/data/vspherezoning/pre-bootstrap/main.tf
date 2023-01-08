@@ -58,6 +58,11 @@ data "vsphere_datacenter" "folder_datacenter" {
   name     = each.value.vsphere_datacenter
 }
 
+
+// TODO: Determine how to provide folder path if folder preexists
+// TODO: as the resource "vsphere_folder" "folder" cannot run
+// TODO: The createDatacenterFolderMap could be modified to support
+
 resource "vsphere_folder" "folder" {
   for_each = var.vsphere_folders
 
@@ -79,7 +84,7 @@ resource "vsphereprivate_import_ova" "import" {
 
   network = var.vsphere_networks[var.vsphere_failure_domains[count.index].name]
 
-
+// TODO: folder path
   folder    = var.vsphere_failure_domains[count.index].topology.folder
   tag       = vsphere_tag.tag.id
   disk_type = var.vsphere_disk_type

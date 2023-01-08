@@ -108,6 +108,9 @@ func TFVars(sources TFVarsSources) ([]byte, error) {
 		PreexistingFolder: sources.PreexistingFolder,
 		DiskType:          sources.DiskType,
 
+		// TODO: in the scenario of no zonal
+		// TODO: how to generate the datastructures below?
+
 		VCenters:                 vcenterZones,
 		FailureDomains:           sources.InstallConfig.Config.VSphere.FailureDomains,
 		NetworksInFailureDomains: sources.NetworksInFailureDomain,

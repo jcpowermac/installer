@@ -194,9 +194,10 @@ func (o *Openshift) Generate(dependencies asset.Parents) error {
 				vsphereCredList = append(vsphereCredList, &vsphereCred)
 			}
 		} else {
-			vCenter := installConfig.Config.VSphere
+			// TODO: anotehr change...
+			vCenter := installConfig.Config.VSphere.VCenters[0]
 			vsphereCred := VSphereCredsSecretData{
-				VCenter:              vCenter.VCenter,
+				VCenter:              vCenter.Server,
 				Base64encodeUsername: base64.StdEncoding.EncodeToString([]byte(vCenter.Username)),
 				Base64encodePassword: base64.StdEncoding.EncodeToString([]byte(vCenter.Password)),
 			}

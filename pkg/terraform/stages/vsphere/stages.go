@@ -111,7 +111,7 @@ func extractOutputHostAddresses(s stages.SplitStage, directory string, config *t
 
 // hostIP returns the ip address for a host
 func hostIP(config *types.InstallConfig, moid string) (string, error) {
-	client, _, cleanup, err := vsphere.CreateVSphereClients(context.TODO(), config.VSphere.VCenter, config.VSphere.Username, config.VSphere.Password)
+	client, _, cleanup, err := vsphere.CreateVSphereClients(context.TODO(), config.VSphere.VCenters[0].Server, config.VSphere.VCenters[0].Username, config.VSphere.VCenters[0].Password)
 	if err != nil {
 		return "", err
 	}
