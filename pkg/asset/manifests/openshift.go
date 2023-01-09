@@ -184,18 +184,8 @@ func (o *Openshift) Generate(dependencies asset.Parents) error {
 		}
 	case vspheretypes.Name:
 		vsphereCredList := make([]*VSphereCredsSecretData, 0)
-		if len(installConfig.Config.VSphere.VCenters) > 0 {
-			for _, vCenter := range installConfig.Config.VSphere.VCenters {
-				vsphereCred := VSphereCredsSecretData{
-					VCenter:              vCenter.Server,
-					Base64encodeUsername: base64.StdEncoding.EncodeToString([]byte(vCenter.Username)),
-					Base64encodePassword: base64.StdEncoding.EncodeToString([]byte(vCenter.Password)),
-				}
-				vsphereCredList = append(vsphereCredList, &vsphereCred)
-			}
-		} else {
-			// TODO: anotehr change...
-			vCenter := installConfig.Config.VSphere.VCenters[0]
+
+		for _, vCenter := range installConfig.Config.VSphere.VCenters {
 			vsphereCred := VSphereCredsSecretData{
 				VCenter:              vCenter.Server,
 				Base64encodeUsername: base64.StdEncoding.EncodeToString([]byte(vCenter.Username)),
@@ -203,6 +193,7 @@ func (o *Openshift) Generate(dependencies asset.Parents) error {
 			}
 			vsphereCredList = append(vsphereCredList, &vsphereCred)
 		}
+
 		cloudCreds = cloudCredsSecretData{
 			VSphere: &vsphereCredList,
 		}

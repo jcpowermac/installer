@@ -73,22 +73,34 @@ func Platform() (*vsphere.Platform, error) {
 		return nil, errors.Wrap(err, "failed to get VIPs")
 	}
 
-	// TODO: Create failure domain, vcenters here instead
+	failureDomain := vsphere.FailureDomain{
+		Name:   "generated-failure-domain",
+		Zone:   "generated-zone",
+		Region: "generated-region",
+		Server: vCenter.VCenter,
+		Topology: vsphere.Topology{
+			Datacenter:     dc,
+			ComputeCluster: cluster,
+			Datastore:      datastore,
+			Networks:       []string{network},
+		},
+	}
+
+	vcenter := vsphere.VCenter{
+		Server:      vCenter.VCenter,
+		Port:        443,
+		Username:    vCenter.Username,
+		Password:    vCenter.Password,
+		Datacenters: []string{dc},
+	}
 
 	platform := &vsphere.Platform{
-		/*
-			Datacenter:       dc,
-			Cluster:          cluster,
-			DefaultDatastore: datastore,
-			Network:          network,
-			VCenter:          vCenter.VCenter,
-			Username:         vCenter.Username,
-			Password:         vCenter.Password,
-
-		*/
-		APIVIPs:     []string{apiVIP},
-		IngressVIPs: []string{ingressVIP},
+		VCenters:       []vsphere.VCenter{vcenter},
+		FailureDomains: []vsphere.FailureDomain{failureDomain},
+		APIVIPs:        []string{apiVIP},
+		IngressVIPs:    []string{ingressVIP},
 	}
+
 	return platform, nil
 }
 
@@ -323,7 +335,7 @@ func getNetwork(ctx context.Context, datacenter string, cluster string, finder F
 	var networkChoices []string
 	for _, network := range networks {
 		if validNetworkTypes.Has(network.Reference().Type) {
-			// TODO Below results in an API call. Can it be eliminated somehow?
+			// Below results in an API call. Can it be eliminated somehow?
 			n, err := GetNetworkName(ctx, client, network)
 			if err != nil {
 				return "", errors.Wrap(err, "unable to get network name")

@@ -9,12 +9,6 @@ import (
 func Metadata(config *types.InstallConfig) *typesvsphere.Metadata {
 	terraformPlatform := "vsphere"
 
-	if vsphere := config.Platform.VSphere; vsphere != nil {
-		if len(vsphere.FailureDomains) != 0 {
-			terraformPlatform = typesvsphere.ZoningTerraformName
-		}
-	}
-
 	// Since currently we only support a single vCenter
 	// just use the first entry in the VCenters slice.
 

@@ -302,7 +302,7 @@ func (m *Master) Generate(dependencies asset.Parents) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to create master machine objects")
 		}
-		// TODO: IBM: implement ConfigMasters() if needed
+		// TO DO: IBM: implement ConfigMasters() if needed
 		// ibmcloud.ConfigMasters(machines, clusterID.InfraID, ic.Publish)
 	case libvirttypes.Name:
 		mpool := defaultLibvirtMachinePoolPlatform()

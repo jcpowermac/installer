@@ -24,7 +24,6 @@ import (
 	"github.com/openshift/installer/pkg/asset/installconfig/vsphere"
 	"github.com/openshift/installer/pkg/destroy/providers"
 	installertypes "github.com/openshift/installer/pkg/types"
-	vspheretypes "github.com/openshift/installer/pkg/types/vsphere"
 )
 
 var defaultTimeout = time.Minute * 5
@@ -126,15 +125,6 @@ func (o *ClusterUninstaller) deleteFolder() error {
 	folderMoList, err := o.listFolders()
 	if err != nil {
 		return err
-	}
-
-	// The installer should create at most one parent,
-	// the parent to the VirtualMachines.
-	// If there are more or less fail with error message.
-	if o.terraformPlatform != vspheretypes.ZoningTerraformName {
-		if len(folderMoList) > 1 {
-			return errors.Errorf("Expected 1 Folder per tag but got %d", len(folderMoList))
-		}
 	}
 
 	if len(folderMoList) == 0 {

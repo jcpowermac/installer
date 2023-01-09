@@ -16,28 +16,6 @@ import (
 	"github.com/openshift/installer/pkg/types"
 )
 
-// PlatformStages are the stages to run to provision the infrastructure in vsphere.
-var PlatformStages = []terraform.Stage{
-	stages.NewStage(
-		"vsphere",
-		"pre-bootstrap",
-		[]providers.Provider{providers.VSphere, providers.VSpherePrivate},
-	),
-	stages.NewStage(
-		"vsphere",
-		"bootstrap",
-		[]providers.Provider{providers.VSphere},
-		stages.WithNormalBootstrapDestroy(),
-		stages.WithCustomExtractHostAddresses(extractOutputHostAddresses),
-	),
-	stages.NewStage(
-		"vsphere",
-		"master",
-		[]providers.Provider{providers.VSphere},
-		stages.WithCustomExtractHostAddresses(extractOutputHostAddresses),
-	),
-}
-
 // ZoningPlatformStages are the stages to run to provision the infrastructure in a
 // multiple region and zone vsphere environment.
 var ZoningPlatformStages = []terraform.Stage{
