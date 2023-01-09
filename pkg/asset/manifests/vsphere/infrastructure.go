@@ -42,9 +42,10 @@ func GetInfraPlatformSpec(ic *installconfig.InstallConfig) *configv1.VSpherePlat
 				Datacenter:     topology.Datacenter,
 				ComputeCluster: topology.ComputeCluster,
 				Networks:       topology.Networks,
-				Datastore:      fmt.Sprintf("/%s/datastore/%s", topology.Datacenter, topology.Datastore),
-				ResourcePool:   topology.ResourcePool,
-				Folder:         topology.Folder,
+				// TODO: fix this - everything in platform spec should be a path
+				Datastore:    fmt.Sprintf("/%s/datastore/%s", topology.Datacenter, topology.Datastore),
+				ResourcePool: topology.ResourcePool,
+				Folder:       topology.Folder,
 			},
 		})
 	}

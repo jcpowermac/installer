@@ -10,11 +10,12 @@ func ConvertInstallConfig(config *types.InstallConfig) error {
 	platform := config.Platform.VSphere
 
 	if len(platform.FailureDomains) > 0 {
+		// In 4.12 we allowed VCenters to be empty and the Deprecated platform
+		// spec was used in place. This would cover that scenario.
+		// TODO: The question I have is, should we?
 		if len(platform.VCenters) == 0 {
-			// Should we be doing this or VCenters[] should be filled in???
 			logrus.Warn("The VCenters[] field should be populated instead")
 
-			// Should we be allowing this????
 			platform.VCenters = make([]vsphere.VCenter, 1)
 			platform.VCenters[0].Server = platform.DeprecatedVCenter
 			platform.VCenters[0].Username = platform.DeprecatedUsername
@@ -24,7 +25,7 @@ func ConvertInstallConfig(config *types.InstallConfig) error {
 			vcenter := &platform.VCenters[0]
 
 			vcenter.Datacenters = append(platform.VCenters[0].Datacenters, platform.DeprecatedDatacenter)
-		} else if len(platform.VCenters) > 0 {
+		} else {
 			if !isDeprecatedFieldsEmpty(platform) {
 				logrus.Warn("something something, deprecated platform fields non-empty, will not be used with FailureDomain and VCenters")
 			}
