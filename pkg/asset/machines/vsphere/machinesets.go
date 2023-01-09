@@ -22,10 +22,15 @@ func getMachineSetWithPlatform(
 	replicas int32,
 	role,
 	userDataSecret string) (*machineapi.MachineSet, error) {
+
+	var provider runtime.Object
+	/* TODO fix me
 	provider, err := provider(clusterID, platform, mpool, osImage, userDataSecret)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create provider")
 	}
+
+	*/
 
 	mset := &machineapi.MachineSet{
 		TypeMeta: metav1.TypeMeta{
@@ -93,6 +98,14 @@ func getfailureDomain(failureDomainName string, platformSpec *vsphere.Platform) 
 		}
 	}
 	return nil, errors.Errorf("%s is not a defined deployment zone", failureDomainName)
+}
+
+func getDefinedZonesFromTopology(p *vsphere.Platform) (map[string]vsphere.FailureDomain, error) {
+	zones := make(map[string]vsphere.FailureDomain)
+	for _, failureDomain := range p.FailureDomains {
+		zones[failureDomain.Name] = failureDomain
+	}
+	return zones, nil
 }
 
 // getDefinedZones retrieves zones and associated platform specs that are appropriate to the machine role

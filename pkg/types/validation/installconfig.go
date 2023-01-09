@@ -1012,6 +1012,7 @@ func validateFeatureSet(c *types.InstallConfig) field.ErrorList {
 			}
 		}
 
+		/* TODO: remove
 		if c.VSphere != nil {
 			if len(c.VSphere.FailureDomains) > 0 {
 				allErrs = append(allErrs, field.Forbidden(field.NewPath("platform", "vsphere", "failureDomains"), errMsg))
@@ -1033,6 +1034,8 @@ func validateFeatureSet(c *types.InstallConfig) field.ErrorList {
 				allErrs = append(allErrs, field.Forbidden(field.NewPath("compute", "platform", "vsphere", "zones"), errMsg))
 			}
 		}
+
+		*/
 	}
 
 	return allErrs

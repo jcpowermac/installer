@@ -7,10 +7,10 @@ import (
 )
 
 func ConvertInstallConfig(config *types.InstallConfig) error {
-	// TODO: if install is non-zonal create zones
-	// TODO: if a install is zonal leave alone
+
 	platform := config.Platform.VSphere
 
+	// TODO: what happens if VCenters == 0???
 	if len(platform.FailureDomains) > 0 && len(platform.VCenters) > 0 {
 		if !isDeprecatedFieldsEmpty(platform) {
 			// emit warning these fields will not be used and are now deprecated
@@ -22,6 +22,7 @@ func ConvertInstallConfig(config *types.InstallConfig) error {
 		platform.VCenters[0].Server = platform.DeprecatedVCenter
 		platform.VCenters[0].Username = platform.DeprecatedUsername
 		platform.VCenters[0].Password = platform.DeprecatedPassword
+		platform.VCenters[0].Port = 443
 
 		vcenter := &platform.VCenters[0]
 
