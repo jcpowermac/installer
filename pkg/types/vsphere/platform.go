@@ -201,7 +201,7 @@ type VCenter struct {
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=32767
 	// +kubebuilder:default=443
-	Port uint `json:"port,omitempty"`
+	Port int32 `json:"port,omitempty"`
 	// Username is the username that will be used to connect to vCenter
 	// +kubebuilder:validation:Required
 	Username string `json:"user"`

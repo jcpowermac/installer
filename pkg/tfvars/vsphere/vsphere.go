@@ -3,8 +3,6 @@ package vsphere
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/pkg/errors"
 
 	machineapi "github.com/openshift/api/machine/v1beta1"
@@ -68,45 +66,33 @@ type TFVarsSources struct {
 
 // TFVars generate vSphere-specific Terraform variables
 func TFVars(sources TFVarsSources) ([]byte, error) {
-	controlPlaneConfig := sources.ControlPlaneConfigs[0]
+	//controlPlaneConfig := sources.ControlPlaneConfigs[0]
 	cachedImage, err := cache.DownloadImageFile(sources.ImageURL)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to use cached vsphere image")
 	}
 
-	// The vSphere provider needs the relativepath of the folder,
-	// so get the relPath from the absolute path. Absolute path is always of the form
-	// /<datacenter>/vm/<folder_path> so we can split on "vm/".
-
-	folderPathList := strings.SplitAfterN(controlPlaneConfig.Workspace.Folder, "vm/", 2)
-
-	// This should never happen
-	if len(folderPathList) <= 1 {
-		return nil, errors.Errorf("control plane folder is not defined as a path %s", controlPlaneConfig.Workspace.Folder)
-	}
-	folderRelPath := folderPathList[1]
-
 	vcenterZones := convertVCentersToMap(sources.InstallConfig.Config.VSphere.VCenters)
 	datacentersFolders := createDatacenterFolderMap(sources.InfraID, sources.InstallConfig.Config.VSphere.FailureDomains)
 
 	cfg := &config{
-		VSphereURL:        controlPlaneConfig.Workspace.Server,
-		VSphereUsername:   sources.Username,
-		VSpherePassword:   sources.Password,
-		MemoryMiB:         controlPlaneConfig.MemoryMiB,
-		DiskGiB:           controlPlaneConfig.DiskGiB,
-		NumCPUs:           controlPlaneConfig.NumCPUs,
-		NumCoresPerSocket: controlPlaneConfig.NumCoresPerSocket,
-		Cluster:           sources.Cluster,
-		ResourcePool:      controlPlaneConfig.Workspace.ResourcePool,
-		Datacenter:        controlPlaneConfig.Workspace.Datacenter,
-		Datastore:         controlPlaneConfig.Workspace.Datastore,
-		Folder:            folderRelPath,
-		Network:           sources.NetworkID,
-		Template:          controlPlaneConfig.Template,
-		OvaFilePath:       cachedImage,
-		PreexistingFolder: sources.PreexistingFolder,
-		DiskType:          sources.DiskType,
+		//VSphereURL:        controlPlaneConfig.Workspace.Server,
+		//VSphereUsername:   sources.Username,
+		//VSpherePassword:   sources.Password,
+		//MemoryMiB:         controlPlaneConfig.MemoryMiB,
+		//DiskGiB:           controlPlaneConfig.DiskGiB,
+		//NumCPUs:           controlPlaneConfig.NumCPUs,
+		//NumCoresPerSocket: controlPlaneConfig.NumCoresPerSocket,
+		//Cluster:           sources.Cluster,
+		//ResourcePool:      controlPlaneConfig.Workspace.ResourcePool,
+		//Datacenter:        controlPlaneConfig.Workspace.Datacenter,
+		//Datastore:         controlPlaneConfig.Workspace.Datastore,
+		//Folder:            folderRelPath,
+		//Network:           sources.NetworkID,
+		//Template:          controlPlaneConfig.Template,
+		OvaFilePath: cachedImage,
+		//PreexistingFolder: sources.PreexistingFolder,
+		DiskType: sources.DiskType,
 
 		// TODO: in the scenario of no zonal
 		// TODO: how to generate the datastructures below?

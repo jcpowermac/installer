@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
@@ -21,6 +20,7 @@ import (
 	ibmcloudmanifests "github.com/openshift/installer/pkg/asset/manifests/ibmcloud"
 	openstackmanifests "github.com/openshift/installer/pkg/asset/manifests/openstack"
 	powervsmanifests "github.com/openshift/installer/pkg/asset/manifests/powervs"
+	vspheremanifests "github.com/openshift/installer/pkg/asset/manifests/vsphere"
 	alibabacloudtypes "github.com/openshift/installer/pkg/types/alibabacloud"
 	awstypes "github.com/openshift/installer/pkg/types/aws"
 	azuretypes "github.com/openshift/installer/pkg/types/azure"
@@ -280,46 +280,12 @@ func (cpc *CloudProviderConfig) Generate(dependencies asset.Parents) error {
 		}
 		cm.Data[cloudProviderConfigDataKey] = powervsConfig
 	case vspheretypes.Name:
-		vSphere := installConfig.Config.Platform.VSphere
-		spew.Dump(vSphere)
+		vsphereConfig, err := vspheremanifests.IniCloudProviderConfig(installConfig.Config.Platform.VSphere)
+		if err != nil {
+			return errors.Wrap(err, "could not create cloud provider config")
+		}
 
-		// TODO: this will need to change since external ccm will be used regardless
-
-		/*
-			if len(vSphere.VCenters) > 0 {
-
-
-				folderPath := installConfig.Config.Platform.VSphere.Folder
-				if len(folderPath) == 0 {
-					dataCenter := installConfig.Config.Platform.VSphere.Datacenter
-					folderPath = fmt.Sprintf("/%s/vm/%s", dataCenter, clusterID.InfraID)
-				}
-
-				vsphereConfig, err := vspheremanifests.MultiZoneIniCloudProviderConfig(folderPath, installConfig.Config.Platform.VSphere)
-				if err != nil {
-					return errors.Wrap(err, "could not create cloud provider config")
-				}
-				cm.Data[cloudProviderConfigDataKey] = vsphereConfig
-			} else {
-
-
-
-				folderPath := installConfig.Config.Platform.VSphere.Folder
-				if len(folderPath) == 0 {
-					dataCenter := installConfig.Config.Platform.VSphere.Datacenter
-					folderPath = fmt.Sprintf("/%s/vm/%s", dataCenter, clusterID.InfraID)
-				}
-				vsphereConfig, err := vspheremanifests.InTreeCloudProviderConfig(
-					folderPath,
-					installConfig.Config.Platform.VSphere,
-				)
-				if err != nil {
-					return errors.Wrap(err, "could not create cloud provider config")
-				}
-				cm.Data[cloudProviderConfigDataKey] = vsphereConfig
-			}
-
-		*/
+		cm.Data[cloudProviderConfigDataKey] = vsphereConfig
 	default:
 		return errors.New("invalid Platform")
 	}

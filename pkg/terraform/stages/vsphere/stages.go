@@ -18,21 +18,21 @@ import (
 
 // ZoningPlatformStages are the stages to run to provision the infrastructure in a
 // multiple region and zone vsphere environment.
-var ZoningPlatformStages = []terraform.Stage{
+var PlatformStages = []terraform.Stage{
 	stages.NewStage(
-		"vspherezoning",
+		"vsphere",
 		"pre-bootstrap",
 		[]providers.Provider{providers.VSphere, providers.VSpherePrivate},
 	),
 	stages.NewStage(
-		"vspherezoning",
+		"vsphere",
 		"bootstrap",
 		[]providers.Provider{providers.VSphere},
 		stages.WithNormalBootstrapDestroy(),
 		stages.WithCustomExtractHostAddresses(extractOutputHostAddresses),
 	),
 	stages.NewStage(
-		"vspherezoning",
+		"vsphere",
 		"master",
 		[]providers.Provider{providers.VSphere},
 		stages.WithCustomExtractHostAddresses(extractOutputHostAddresses),

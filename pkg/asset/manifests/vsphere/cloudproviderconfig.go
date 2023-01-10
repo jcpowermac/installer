@@ -3,6 +3,8 @@ package vsphere
 import (
 	"bytes"
 	"fmt"
+	"gopkg.in/ini.v1"
+	"strconv"
 	"strings"
 
 	"github.com/go-yaml/yaml"
@@ -15,12 +17,6 @@ const (
 	regionTagCategory = "openshift-region"
 	zoneTagCategory   = "openshift-zone"
 )
-
-func printIfNotEmpty(buf *bytes.Buffer, k, v string) {
-	if v != "" {
-		fmt.Fprintf(buf, "%s = %q\n", k, v)
-	}
-}
 
 func appendTagCategory(tagCategory string, tagCategories []string) []string {
 	tagDefined := false
@@ -41,13 +37,13 @@ func MultiZoneYamlCloudProviderConfig(p *vspheretypes.Platform) (string, error) 
 	vCenters := make(map[string]*cloudconfig.VirtualCenterConfigYAML)
 
 	for _, vCenter := range p.VCenters {
-		vCenterPort := uint(443)
+		vCenterPort := int32(443)
 		if vCenter.Port != 0 {
 			vCenterPort = vCenter.Port
 		}
 		vCenterConfig := cloudconfig.VirtualCenterConfigYAML{
 			VCenterIP:   vCenter.Server,
-			VCenterPort: vCenterPort,
+			VCenterPort: uint(vCenterPort),
 			Datacenters: vCenter.Datacenters,
 		}
 		vCenters[vCenter.Server] = &vCenterConfig
@@ -72,90 +68,143 @@ func MultiZoneYamlCloudProviderConfig(p *vspheretypes.Platform) (string, error) 
 	return string(cloudProviderConfigYaml), nil
 }
 
-// MultiZoneIniCloudProviderConfig generates the multi-zone ini cloud provider config
-// for the vSphere platform. folderPath is the absolute path to the VM folder that will be
-// used for installation. p is the vSphere platform struct.
-func MultiZoneIniCloudProviderConfig(folderPath string, p *vspheretypes.Platform) (string, error) {
+// IniCloudProviderConfig generates external CCM ini configuration
+// for the vSphere platform. p is the vSphere platform struct.
+func IniCloudProviderConfig(p *vspheretypes.Platform) (string, error) {
 	buf := new(bytes.Buffer)
+	cfg := ini.Empty()
 
-	fmt.Fprintln(buf, "[Global]")
-	printIfNotEmpty(buf, "secret-name", "vsphere-creds")
-	printIfNotEmpty(buf, "secret-namespace", "kube-system")
-	printIfNotEmpty(buf, "insecure-flag", "1")
-	fmt.Fprintln(buf, "")
-
-	for _, vcenter := range p.VCenters {
-		fmt.Fprintf(buf, "[VirtualCenter %q]\n", vcenter.Server)
-		if vcenter.Port != 0 {
-			printIfNotEmpty(buf, "port", fmt.Sprintf("%d", vcenter.Port))
-			fmt.Fprintln(buf, "")
-		}
-		var datacenters []string
-		for _, datacenter := range vcenter.Datacenters {
-			datacenters = append(datacenters, datacenter)
-		}
-		for _, failureDomain := range p.FailureDomains {
-			if failureDomain.Server == vcenter.Server {
-				failureDomainDatacenter := failureDomain.Topology.Datacenter
-				exists := false
-				for _, existingDatacenter := range datacenters {
-					if failureDomainDatacenter == existingDatacenter {
-						exists = true
-						break
-					}
-				}
-				if exists == false {
-					datacenters = append(datacenters, failureDomainDatacenter)
-				}
-			}
-		}
-		printIfNotEmpty(buf, "datacenters", strings.Join(datacenters, ","))
+	global, err := setOrGetSection(cfg, "Global")
+	if err != nil {
+		return "", err
 	}
-	fmt.Fprintln(buf, "")
+	_, err = setOrGetKeyValue(global, "secret-name", "vsphere-creds", true)
+	if err != nil {
+		return "", err
+	}
+	_, err = setOrGetKeyValue(global, "secret-namespace", "kube-system", true)
+	if err != nil {
+		return "", err
+	}
+	_, err = setOrGetKeyValue(global, "insecure-flag", "1", true)
+	if err != nil {
+		return "", err
+	}
 
-	fmt.Fprintln(buf, "[Workspace]")
-	/* TODO: fix here
-	printIfNotEmpty(buf, "server", p.VCenter)
-	printIfNotEmpty(buf, "datacenter", p.Datacenter)
-	printIfNotEmpty(buf, "default-datastore", p.DefaultDatastore)
-	printIfNotEmpty(buf, "folder", folderPath)
-	printIfNotEmpty(buf, "resourcepool-path", p.ResourcePool)
+	if err := setVirtualCenters(cfg, p); err != nil {
+		return "", err
+	}
+	if err = setDatacentersFromFailureDomains(cfg, p); err != nil {
+		return "", err
+	}
+	// TODO: does this make sense to not enable for len(failuredomains) == 1
+	// TODO: thinking in the scenario of generated fds
+	if len(p.FailureDomains) > 1 {
+		if err := setLabelsSection(cfg); err != nil {
+			return "", err
+		}
+	}
 
-	*/
-	fmt.Fprintln(buf, "")
-
-	fmt.Fprintln(buf, "[Labels]")
-	printIfNotEmpty(buf, "region", regionTagCategory)
-	printIfNotEmpty(buf, "zone", zoneTagCategory)
+	_, err = cfg.WriteTo(buf)
+	if err != nil {
+		return "", err
+	}
 
 	return buf.String(), nil
 }
 
-// InTreeCloudProviderConfig generates the in-tree cloud provider config for the vSphere platform.
-// folderPath is the absolute path to the VM folder that will be used for installation.
-// p is the vSphere platform struct.
-func InTreeCloudProviderConfig(folderPath string, p *vspheretypes.Platform) (string, error) {
-	buf := new(bytes.Buffer)
+func setOrGetSection(cfg *ini.File, name string) (*ini.Section, error) {
+	if cfg.HasSection(name) {
+		return cfg.GetSection(name)
+	} else {
+		return cfg.NewSection(name)
+	}
+}
+func setOrGetKeyValue(section *ini.Section, name, value string, overwrite bool) (*ini.Key, error) {
+	var err error
+	var key *ini.Key
+	if !section.HasKey(name) {
+		key, err = section.NewKey(name, value)
+	} else {
+		key, err = section.GetKey(name)
+		if err != nil {
+			return nil, err
+		}
+		if overwrite {
+			key.SetValue(value)
+		}
+	}
+	return key, err
+}
+func setVirtualCenters(cfg *ini.File, p *vspheretypes.Platform) error {
+	for _, vcenter := range p.VCenters {
+		vcenterSectionName := fmt.Sprintf("VirtualCenter \"%s\"", vcenter.Server)
+		vCenterSection, err := setOrGetSection(cfg, vcenterSectionName)
+		if err != nil {
+			return fmt.Errorf("could not get or set VirtualCenter section: %w", err)
+		}
 
-	fmt.Fprintln(buf, "[Global]")
-	printIfNotEmpty(buf, "secret-name", "vsphere-creds")
-	printIfNotEmpty(buf, "secret-namespace", "kube-system")
-	printIfNotEmpty(buf, "insecure-flag", "1")
-	fmt.Fprintln(buf, "")
+		if err := setVCenterPortKey(vCenterSection, vcenter.Port); err != nil {
+			return fmt.Errorf("could not set VirtualCenters port value: %w", err)
+		}
 
-	fmt.Fprintln(buf, "[Workspace]")
-	/* TODO: fix here
-	printIfNotEmpty(buf, "server", p.VCenter)
-	printIfNotEmpty(buf, "datacenter", p.Datacenter)
-	printIfNotEmpty(buf, "default-datastore", p.DefaultDatastore)
-	printIfNotEmpty(buf, "folder", folderPath)
-	printIfNotEmpty(buf, "resourcepool-path", p.ResourcePool)
+		datacenters := strings.Join(vcenter.Datacenters[:], ",")
+		_, err = setOrGetKeyValue(vCenterSection, "datacenters", datacenters, true)
+		if err != nil {
+			return fmt.Errorf("could not get or set the datacenters key value: %w", err)
+		}
+	}
+	return nil
+}
+func setVCenterPortKey(vCenterSection *ini.Section, port int32) error {
+	_, err := setOrGetKeyValue(vCenterSection, "port", strconv.FormatInt(int64(port), 10), true)
+	return err
+}
+func setDatacentersFromFailureDomains(cfg *ini.File, p *vspheretypes.Platform) error {
+	for _, fd := range p.FailureDomains {
+		vcenterSectionName := fmt.Sprintf("VirtualCenter \"%s\"", fd.Server)
+		vCenterSection, err := setOrGetSection(cfg, vcenterSectionName)
+		if err != nil {
+			return err
+		}
 
-	fmt.Fprintln(buf, "")
+		err = setVCenterDatacentersKey(vCenterSection, fd.Topology.Datacenter)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func setVCenterDatacentersKey(vCenterSection *ini.Section, datacenter string) error {
+	// Get existing key (don't overwrite) or get new key
+	key, err := setOrGetKeyValue(vCenterSection, "datacenters", datacenter, false)
+	if err != nil {
+		return err
+	}
 
-	fmt.Fprintf(buf, "[VirtualCenter %q]\n", p.VCenter)
-	printIfNotEmpty(buf, "datacenters", p.Datacenter)
-	*/
+	datacenters := key.String()
 
-	return buf.String(), nil
+	if !strings.Contains(datacenters, datacenter) {
+		datacenters = fmt.Sprintf("%s,%s", datacenters, datacenter)
+		key.SetValue(datacenters)
+	}
+
+	return nil
+}
+func setLabelsSection(cfg *ini.File) error {
+	labels := map[string]string{"region": regionTagCategory, "zone": zoneTagCategory}
+
+	labelsSection, err := setOrGetSection(cfg, "Labels")
+	if err != nil {
+		return err
+	}
+
+	for k, v := range labels {
+		_, err = setOrGetKeyValue(labelsSection, k, v, true)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

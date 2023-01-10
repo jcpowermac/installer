@@ -226,15 +226,18 @@ func (m *Manifests) Load(f asset.FileFetcher) (bool, error) {
 
 func redactedInstallConfig(config types.InstallConfig) ([]byte, error) {
 	config.PullSecret = ""
-	if config.Platform.VSphere != nil {
-		p := *config.Platform.VSphere
+	/*
+		if config.Platform.VSphere != nil {
+			p := *config.Platform.VSphere
 
-		for i := range p.VCenters {
-			p.VCenters[i].Password = ""
-			p.VCenters[i].Username = ""
-			config.Platform.VSphere = &p
+			for i := range p.VCenters {
+				p.VCenters[i].Password = ""
+				p.VCenters[i].Username = ""
+				config.Platform.VSphere = &p
+			}
 		}
-	}
+
+	*/
 	// TO DO: CHECK THIS
 	return yaml.Marshal(config)
 }

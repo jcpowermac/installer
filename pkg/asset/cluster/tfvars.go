@@ -867,18 +867,6 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 		})
 
 	case vsphere.Name:
-		networkFailureDomainMap := make(map[string]string)
-		var networkID string
-		controlPlanes, err := mastersAsset.Machines()
-		if err != nil {
-			return err
-		}
-
-		controlPlaneConfigs := make([]*machinev1beta1.VSphereMachineProviderSpec, len(controlPlanes))
-		for i, c := range controlPlanes {
-			controlPlaneConfigs[i] = c.Spec.ProviderSpec.Value.Object.(*machinev1beta1.VSphereMachineProviderSpec)
-		}
-
 		vim25Client, _, cleanup, err := vsphereconfig.CreateVSphereClients(context.TODO(),
 			installConfig.Config.VSphere.VCenters[0].Server,
 			installConfig.Config.VSphere.VCenters[0].Username,
@@ -887,7 +875,20 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 			return errors.Wrapf(err, "unable to connect to vCenter %s. Ensure provided information is correct and client certs have been added to system trust.", installConfig.Config.VSphere.VCenters[0].Server)
 		}
 		defer cleanup()
+
 		finder := vsphereconfig.NewFinder(vim25Client)
+
+		networkFailureDomainMap := make(map[string]string)
+
+		//var networkID string
+		controlPlanes, err := mastersAsset.Machines()
+		if err != nil {
+			return err
+		}
+		controlPlaneConfigs := make([]*machinev1beta1.VSphereMachineProviderSpec, len(controlPlanes))
+		for i, c := range controlPlanes {
+			controlPlaneConfigs[i] = c.Spec.ProviderSpec.Value.Object.(*machinev1beta1.VSphereMachineProviderSpec)
+		}
 
 		for _, fd := range installConfig.Config.VSphere.FailureDomains {
 
@@ -906,38 +907,11 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 			}
 		}
 
-		/* no longer needed since all will be zonal...
-		networkID, err = vsphereconfig.GetNetworkMoID(context.TODO(),
-			vim25Client,
-			finder,
-			controlPlaneConfigs[0].Workspace.Datacenter,
-			installConfig.Config.VSphere.Cluster,
-			controlPlaneConfigs[0].Network.Devices[0].NetworkName)
-		if err != nil {
-			return errors.Wrap(err, "failed to get vSphere network ID")
-		}
-
-		*/
-
-		// TODO: fix me, though I think the function in vsphere/tfvars would automagically work.
-		// Set this flag to use an existing folder specified in the install-config. Otherwise, create one.
-		//preexistingFolder := installConfig.Config.Platform.VSphere.Folder != ""
-
-		// TODO: determine these variables
-
-		// TODO: tbh these probably can be severely pruned
-
 		data, err = vspheretfvars.TFVars(
 			vspheretfvars.TFVarsSources{
-				ControlPlaneConfigs: controlPlaneConfigs,
-				Username:            installConfig.Config.VSphere.VCenters[0].Username,
-				Password:            installConfig.Config.VSphere.VCenters[0].Password,
-				Cluster:             "TODO-cluster",
-				ImageURL:            string(*rhcosImage),
-				PreexistingFolder:   false,
-				DiskType:            installConfig.Config.Platform.VSphere.DiskType,
-				NetworkID:           networkID,
-
+				ControlPlaneConfigs:     controlPlaneConfigs,
+				ImageURL:                string(*rhcosImage),
+				DiskType:                installConfig.Config.Platform.VSphere.DiskType,
 				NetworksInFailureDomain: networkFailureDomainMap,
 				InfraID:                 clusterID.InfraID,
 				InstallConfig:           installConfig,
