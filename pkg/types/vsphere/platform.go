@@ -23,10 +23,6 @@ const (
 
 // Platform stores any global configuration used for vsphere platforms
 type Platform struct {
-
-	// TODO: deprecated existing platform spec parameters
-	// TODO: additional validation for deprecated parameters
-
 	// VCenter is the domain name or IP address of the vCenter.
 	// Deprecated: Use VCenters.Server
 	DeprecatedVCenter string `json:"vCenter,omitempty"`

@@ -4,7 +4,6 @@ package vsphere
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"sort"
 	"strings"
 	"time"
@@ -64,9 +63,6 @@ func Platform() (*vsphere.Platform, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	spew.Dump(datastore)
-	spew.Dump(network)
 
 	apiVIP, ingressVIP, err := getVIPs()
 	if err != nil {

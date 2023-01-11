@@ -510,8 +510,6 @@ func (w *Worker) Generate(dependencies asset.Parents) error {
 				machineSets = append(machineSets, set)
 			}
 		case vspheretypes.Name:
-
-			// TODO: check this
 			mpool := defaultVSphereMachinePoolPlatform()
 			mpool.Set(ic.Platform.VSphere.DefaultMachinePlatform)
 			mpool.Set(pool.Platform.VSphere)

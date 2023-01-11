@@ -184,9 +184,11 @@ func TestPermissionValidate(t *testing.T) {
 	validInstallConfig := validIPIInstallConfig("DC0", "")
 	validMultiZoneInstallConfig := validIPIMultiZoneInstallConfig()
 
+	// TODO: jcallen: fix this
 	userDefinedFolderInstallConfig := validIPIInstallConfig("DC0", "")
 	userDefinedFolderInstallConfig.VSphere.Folder = "/DC0/vm/my-folder"
 
+	// TODO: jcallen: fix this
 	invalidDatacenterInstallConfig := validIPIInstallConfig("DC0", "")
 	invalidDatacenterInstallConfig.VSphere.Datacenter = "invalid"
 
@@ -314,6 +316,7 @@ func TestPermissionValidate(t *testing.T) {
 			name: "missing cluster Permissions",
 			installConfig: func() *types.InstallConfig {
 				installConfig := validIPIInstallConfig("DC0", "")
+				// TODO: jcallen: fix this
 				installConfig.VSphere.ResourcePool = ""
 				return installConfig
 			}(),
@@ -345,6 +348,7 @@ func TestPermissionValidate(t *testing.T) {
 			name: "user-defined folder provided, datacenter can have read-only",
 			installConfig: func() *types.InstallConfig {
 				installConfig := validIPIInstallConfig("DC0", "")
+				// TODO: jcallen: fix this
 				installConfig.VSphere.Folder = "/DC0/vm/my-folder"
 				return installConfig
 			}(),

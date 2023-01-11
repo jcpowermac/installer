@@ -11,6 +11,8 @@ import (
 	"github.com/openshift/installer/pkg/types/vsphere"
 )
 
+// TODO: jcallen: fix this
+
 func validPlatform() *vsphere.Platform {
 	return &vsphere.Platform{
 		VCenter:          "test-vcenter",

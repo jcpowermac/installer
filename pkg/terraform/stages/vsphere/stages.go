@@ -16,7 +16,7 @@ import (
 	"github.com/openshift/installer/pkg/types"
 )
 
-// ZoningPlatformStages are the stages to run to provision the infrastructure in a
+// PlatformStages are the stages to run to provision the infrastructure in a
 // multiple region and zone vsphere environment.
 var PlatformStages = []terraform.Stage{
 	stages.NewStage(

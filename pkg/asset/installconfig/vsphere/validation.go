@@ -194,7 +194,7 @@ func ValidateForProvisioning(ic *types.InstallConfig) error {
 
 func validateProvisioning(validationCtx *validationContext, ic *types.InstallConfig) error {
 	allErrs := field.ErrorList{}
-	/* TODO: fix this function...
+	/* TODO: jcallen: fix this
 	platform := ic.Platform.VSphere
 	vsphereField := field.NewPath("platform").Child("vsphere")
 

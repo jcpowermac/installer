@@ -23,6 +23,7 @@ var (
 	validCIDR = "10.0.0.0/16"
 )
 
+// TODO: jcallen: fix this
 func validIPIInstallConfig(dcName string, fName string) *types.InstallConfig {
 	return &types.InstallConfig{
 		Networking: &types.Networking{
