@@ -14,7 +14,7 @@ func ConvertInstallConfig(config *types.InstallConfig) error {
 		// spec was used in place. This would cover that scenario.
 		// TODO: The question I have is, should we?
 		if len(platform.VCenters) == 0 {
-			logrus.Warn("The VCenters[] field should be populated instead")
+			logrus.Warn("Depreciated platform fields are being used for vCenter connection details. Use vcenters instead.")
 
 			platform.VCenters = make([]vsphere.VCenter, 1)
 			platform.VCenters[0].Server = platform.DeprecatedVCenter
@@ -31,7 +31,12 @@ func ConvertInstallConfig(config *types.InstallConfig) error {
 			}
 		}
 	} else {
-		// non-zonal installation
+		logrus.Warn("Platform fields used are depreciated and are being converted. See documentation for additional details.")
+		if len(platform.VCenters) > 0 {
+			// TODO: jcallen: Or should we just fail here?
+			logrus.Warn("Deprecated platform fields will overwrite VCenters list.")
+		}
+
 		platform.VCenters = make([]vsphere.VCenter, 1)
 		platform.VCenters[0].Server = platform.DeprecatedVCenter
 		platform.VCenters[0].Username = platform.DeprecatedUsername

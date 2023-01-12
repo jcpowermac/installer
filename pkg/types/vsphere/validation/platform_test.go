@@ -15,25 +15,16 @@ import (
 
 func validPlatform() *vsphere.Platform {
 	return &vsphere.Platform{
-		VCenter:          "test-vcenter",
-		Username:         "test-username",
-		Password:         "test-password",
-		Datacenter:       "test-datacenter",
-		DefaultDatastore: "test-datastore",
+		DeprecatedVCenter:          "test-vcenter",
+		DeprecatedUsername:         "test-username",
+		DeprecatedPassword:         "test-password",
+		DeprecatedDatacenter:       "test-datacenter",
+		DeprecatedDefaultDatastore: "test-datastore",
 	}
 }
 
 func validMultiVCenterPlatform() *vsphere.Platform {
 	return &vsphere.Platform{
-		VCenter:          "test-vcenter",
-		Username:         "test-username",
-		Password:         "test-password",
-		Datacenter:       "test-datacenter",
-		DefaultDatastore: "test-datastore",
-		Folder:           "/test-datacenter/vm/test-folder",
-		Cluster:          "test-cluster",
-		ResourcePool:     "/test-datacenter/host/test-cluster/Resources/test-resource-pool",
-		Network:          "test-network",
 		VCenters: []vsphere.VCenter{
 			{
 				Server:   "test-vcenter",
