@@ -32,6 +32,8 @@ func Validate(ic *types.InstallConfig) error {
 	if ic.Platform.VSphere == nil {
 		return errors.New(field.Required(field.NewPath("platform", "vsphere"), "vSphere validation requires a vSphere platform configuration").Error())
 	}
+	// todo: jcallen: why is ValidatePlatform ran twice?
+	// todo: jcallen: or is golang just confused
 	return validation.ValidatePlatform(ic.Platform.VSphere, field.NewPath("platform").Child("vsphere")).ToAggregate()
 }
 
@@ -60,17 +62,12 @@ func getVCenterClient(failureDomain vsphere.FailureDomain, ic *types.InstallConf
 	return nil, nil, fmt.Errorf("vcenter %s not defined in vcenters", server)
 }
 
-// ValidateMultiZoneForProvisioning performs platform validation specifically
+// ValidateForProvisioning performs platform validation specifically
 // for multi-zone installer-provisioned infrastructure. In this case,
 // self-hosted networking is a requirement when the installer creates
 // infrastructure for vSphere clusters.
-func ValidateMultiZoneForProvisioning(ic *types.InstallConfig) error {
+func ValidateForProvisioning(ic *types.InstallConfig) error {
 	allErrs := field.ErrorList{}
-
-	err := ValidateForProvisioning(ic)
-	if err != nil {
-		return err
-	}
 
 	// If APIVIPs and IngressVIPs is equal to zero
 	// then don't validate the VIPs.
@@ -154,89 +151,6 @@ func validateMultiZoneProvisioning(validationCtx *validationContext, failureDoma
 	}
 
 	return allErrs
-}
-
-// ValidateForProvisioning performs platform validation specifically for installer-
-// provisioned infrastructure. In this case, self-hosted networking is a requirement
-// when the installer creates infrastructure for vSphere clusters.
-func ValidateForProvisioning(ic *types.InstallConfig) error {
-	if ic.Platform.VSphere == nil {
-		return errors.New(field.Required(field.NewPath("platform", "vsphere"), "vSphere validation requires a vSphere platform configuration").Error())
-	}
-
-	p := ic.Platform.VSphere
-	vim25Client, _, cleanup, err := CreateVSphereClients(context.TODO(),
-		p.VCenters[0].Server,
-		p.VCenters[0].Username,
-		p.VCenters[0].Password)
-
-	if err != nil {
-		return errors.New(field.InternalError(field.NewPath("platform", "vsphere"), errors.Wrapf(err, "unable to connect to vCenter %s.", p.VCenters[0].Server)).Error())
-	}
-	defer cleanup()
-
-	finder := NewFinder(vim25Client)
-	validationCtx := &validationContext{
-		AuthManager: newAuthManager(vim25Client),
-		Finder:      finder,
-		Client:      vim25Client,
-	}
-	ctx, cancel := context.WithTimeout(context.TODO(), 60*time.Second)
-	defer cancel()
-
-	err = pruneToAvailablePermissions(ctx, validationCtx.AuthManager)
-	if err != nil {
-		return errors.New(field.InternalError(field.NewPath("platform", "vsphere"), errors.Wrapf(err, "unable to determine available vCenter privileges.")).Error())
-	}
-
-	return validateProvisioning(validationCtx, ic)
-}
-
-func validateProvisioning(validationCtx *validationContext, ic *types.InstallConfig) error {
-	allErrs := field.ErrorList{}
-	/* TODO: jcallen: fix this
-	platform := ic.Platform.VSphere
-	vsphereField := field.NewPath("platform").Child("vsphere")
-
-	checkDatacenterPrivileges := ic.VSphere.Folder == ""
-	checkComputeClusterPrivileges := ic.VSphere.ResourcePool == ""
-	allErrs = append(allErrs, validation.ValidateForProvisioning(platform, vsphereField)...)
-	allErrs = append(allErrs, validateVcenterPrivileges(validationCtx, vsphereField.Child("vcenter"))...)
-	allErrs = append(allErrs, folderExists(validationCtx, ic.VSphere.Folder, vsphereField.Child("folder"))...)
-	allErrs = append(allErrs, resourcePoolExists(validationCtx, ic.VSphere.ResourcePool, vsphereField.Child("resourcePool"))...)
-
-	// if the datacenter or cluster fail to be found or is missing privileges, this will cascade through the balance
-	// of checks.  exit if they fail to limit multiple errors from being thrown.
-	errs := datacenterExists(validationCtx, platform.Datacenter, vsphereField.Child("datacenter"), checkDatacenterPrivileges)
-	if len(errs) > 0 {
-		allErrs = append(allErrs, errs...)
-		return allErrs.ToAggregate()
-	}
-	computeCluster := platform.Cluster
-	if computeCluster == "" {
-		return field.Required(vsphereField.Child("cluster"), "must specify the cluster")
-	}
-	clusterPathRegexp := regexp.MustCompile("^\\/(.*?)\\/host\\/(.*?)$")
-	clusterPathParts := clusterPathRegexp.FindStringSubmatch(computeCluster)
-	if len(clusterPathParts) < 3 {
-		computeCluster = fmt.Sprintf("/%s/host/%s", platform.Datacenter, computeCluster)
-	}
-	errs = computeClusterExists(validationCtx, computeCluster, vsphereField.Child("cluster"), checkComputeClusterPrivileges)
-	if len(errs) > 0 {
-		allErrs = append(allErrs, errs...)
-		return allErrs.ToAggregate()
-	}
-
-	errs = validateNetwork(validationCtx, platform.Datacenter, platform.Cluster, platform.Network, vsphereField.Child("network"))
-	if len(errs) > 0 {
-		allErrs = append(allErrs, errs...)
-		return allErrs.ToAggregate()
-	}
-
-
-	allErrs = append(allErrs, datastoreExists(validationCtx, platform.Datacenter, platform.DefaultDatastore, vsphereField.Child("defaultDatastore"))...)
-	*/
-	return allErrs.ToAggregate()
 }
 
 // folderExists returns an error if a folder is specified in the vSphere platform but a folder with that name is not found in the datacenter.

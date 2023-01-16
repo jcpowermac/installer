@@ -9,6 +9,7 @@ import (
 	vsphere "github.com/openshift/installer/pkg/types/vsphere"
 )
 
+// TODO: jcallen: fix me...
 var (
 	expectedInTreeConfig = `[Global]
 secret-name = "vsphere-creds"

@@ -109,7 +109,7 @@ func (a *PlatformProvisionCheck) Generate(dependencies asset.Parents) error {
 			return err
 		}
 	case vsphere.Name:
-		if err := vsconfig.ValidateMultiZoneForProvisioning(ic.Config); err != nil {
+		if err := vsconfig.ValidateForProvisioning(ic.Config); err != nil {
 			return err
 		}
 	case ovirt.Name:

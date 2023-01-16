@@ -720,6 +720,9 @@ func validatePlatform(platform *types.Platform, fldPath *field.Path, network *ty
 		validate(powervs.Name, platform.PowerVS, func(f *field.Path) field.ErrorList { return powervsvalidation.ValidatePlatform(platform.PowerVS, f) })
 	}
 	if platform.VSphere != nil {
+
+		// todo: jcallen: why is ValidatePlatform ran twice?
+		// todo: jcallen: or is golang just confused
 		validate(vsphere.Name, platform.VSphere, func(f *field.Path) field.ErrorList {
 			return vspherevalidation.ValidatePlatform(platform.VSphere, f)
 		})

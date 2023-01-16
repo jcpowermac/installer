@@ -14,132 +14,22 @@ import (
 
 // ValidatePlatform checks that the specified platform is valid.
 func ValidatePlatform(p *vsphere.Platform, fldPath *field.Path) field.ErrorList {
-
-	// TODO: jcallen: fix this
 	allErrs := field.ErrorList{}
-	/*
-		if len(p.VCenter) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("vCenter"), "must specify the name of the vCenter"))
-		}
-		if len(p.Username) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("username"), "must specify the username"))
-		}
-		if len(p.Password) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("password"), "must specify the password"))
-		}
-		if len(p.Datacenter) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("datacenter"), "must specify the datacenter"))
-		}
-		if len(p.DefaultDatastore) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("defaultDatastore"), "must specify the default datastore"))
-		}
 
-		if len(p.VCenter) != 0 {
-			if err := validate.Host(p.VCenter); err != nil {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("vCenter"), p.VCenter, "must be the domain name or IP address of the vCenter"))
-			}
-		}
-
-		// folder is optional, but if provided should pass validation
-		if len(p.Folder) != 0 {
-			allErrs = append(allErrs, validateFolder(p, fldPath)...)
-		}
-
-		// resource pool is optional, but if provided should pass validation
-		if len(p.ResourcePool) != 0 {
-			allErrs = append(allErrs, validateResourcePool(p, fldPath)...)
-		}
-	*/
-
+	if len(p.VCenters) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("vcenters"), "must be defined"))
+		return allErrs
+	} else {
+		allErrs = append(allErrs, validateVCenters(p, fldPath.Child("vcenters"))...)
+	}
+	if len(p.FailureDomains) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("failureDomains"), "must be defined"))
+	} else {
+		allErrs = append(allErrs, validateFailureDomains(p, fldPath.Child("failureDomains"))...)
+	}
 	// diskType is optional, but if provided should pass validation
 	if len(p.DiskType) != 0 {
 		allErrs = append(allErrs, validateDiskType(p, fldPath)...)
-	}
-
-	if len(p.FailureDomains) > 0 || len(p.VCenters) > 0 {
-		allErrs = append(allErrs, validateMultiZone(p, fldPath)...)
-	}
-
-	return allErrs
-}
-
-func validateMultiZone(p *vsphere.Platform, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	/* TODO: jcallen: fix this
-	if len(p.VCenters) == 0 {
-		// if p.VCenters is empty, populate a single vCenter based on the legacy platform spec
-		p.VCenters = append(p.VCenters, vsphere.VCenter{
-			Server:      p.VCenter,
-			Port:        443,
-			Username:    p.Username,
-			Password:    p.Password,
-			Datacenters: []string{p.Datacenter},
-		})
-
-		// populate failure domains that dont explicitly define a server
-		for idx, failureDomain := range p.FailureDomains {
-			if len(failureDomain.Server) == 0 {
-				p.FailureDomains[idx].Server = p.VCenter
-			}
-			if len(failureDomain.Topology.Datacenter) == 0 {
-				p.FailureDomains[idx].Topology.Datacenter = p.Datacenter
-			}
-			if len(failureDomain.Topology.ComputeCluster) == 0 {
-				p.FailureDomains[idx].Topology.ComputeCluster = fmt.Sprintf("/%s/host/%s", p.Datacenter, p.Cluster)
-			}
-			if len(failureDomain.Topology.ResourcePool) == 0 {
-				p.FailureDomains[idx].Topology.ResourcePool = p.ResourcePool
-			}
-			if len(failureDomain.Topology.Networks) == 0 && len(p.Network) > 0 {
-				if len(failureDomain.Topology.Networks) == 0 {
-					p.FailureDomains[idx].Topology.Networks = []string{p.Network}
-				}
-			}
-			if len(failureDomain.Topology.Datastore) == 0 {
-				p.FailureDomains[idx].Topology.Datastore = p.DefaultDatastore
-			}
-
-			if len(failureDomain.Topology.ResourcePool) == 0 {
-				// If the legacy resourcePool is not defined we can't use it for FailureDomain
-				if len(p.ResourcePool) != 0 {
-					if strings.Contains(p.ResourcePool, p.FailureDomains[idx].Topology.Datacenter) {
-						// Only use the legacy resourcePool platform spec parameter if the datacenter exists in the path.
-						if strings.Contains(p.ResourcePool, p.FailureDomains[idx].Topology.ComputeCluster) {
-							p.FailureDomains[idx].Topology.ResourcePool = p.ResourcePool
-						} else {
-							allErrs = append(allErrs, field.Invalid(fldPath.Child("resourcePool"), p.ResourcePool, fmt.Sprintf("resource pool must be in compute cluster %s; please define it in a topology", p.FailureDomains[idx].Topology.ComputeCluster)))
-						}
-					} else {
-						allErrs = append(allErrs, field.Invalid(fldPath.Child("resourcePool"), p.ResourcePool, fmt.Sprintf("resource pool must be in datacenter %s; please define it in a topology", p.FailureDomains[idx].Topology.Datacenter)))
-					}
-				}
-			}
-			if len(failureDomain.Topology.Folder) == 0 {
-				// If the legacy folder is not defined we can't use it for FailureDomain
-				if len(p.Folder) != 0 {
-					// Only use the legacy folder platform spec parameter if the datacenter exists in the path.
-					if strings.Contains(p.Folder, p.FailureDomains[idx].Topology.Datacenter) {
-						p.FailureDomains[idx].Topology.Folder = p.Folder
-					} else {
-						allErrs = append(allErrs, field.Invalid(fldPath.Child("folder"), p.Folder, fmt.Sprintf("folder must be in datacenter %s; please define it in a topology", p.FailureDomains[idx].Topology.Datacenter)))
-					}
-				}
-			}
-		}
-	}
-	*/
-
-	allErrs = append(allErrs, validateVCenters(p, fldPath.Child("vcenters"))...)
-	if len(allErrs) > 0 {
-		// if vcenters fails validation, this will cascade to failureDomains and deploymentZones
-		return allErrs
-	}
-
-	if len(p.FailureDomains) > 0 {
-		allErrs = append(allErrs, validateFailureDomains(p, fldPath.Child("failureDomains"))...)
-	} else if len(p.VCenters) > 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("failureDomains"), "must be defined if vcenters is defined"))
 	}
 
 	return allErrs
@@ -208,6 +98,19 @@ func validateFailureDomains(p *vsphere.Platform, fldPath *field.Path) field.Erro
 
 		if len(failureDomain.Topology.Datastore) == 0 {
 			allErrs = append(allErrs, field.Required(topologyFld.Child("datastore"), "must specify a datastore"))
+		} else {
+
+			// todo: jcallen: should we generate a datastore path?
+			datastore := failureDomain.Topology.Datastore
+			datastorePathRegexp := regexp.MustCompile(`^/(.*?)/datastore/(.*?)$`)
+			datastorePathParts := datastorePathRegexp.FindStringSubmatch(datastore)
+			if len(datastorePathParts) < 3 {
+				return append(allErrs, field.Invalid(topologyFld.Child("datastore"), datastore, "full path of datastore must be provided in format /<datacenter/datastore/<datastore>"))
+			}
+
+			if !strings.Contains(failureDomain.Topology.Datastore, failureDomain.Topology.Datacenter) {
+				return append(allErrs, field.Invalid(topologyFld.Child("datastore"), failureDomain.Topology.Datastore, "the datastore defined does not exist in the correct datacenter"))
+			}
 		}
 
 		if len(failureDomain.Topology.Networks) == 0 {
@@ -215,7 +118,19 @@ func validateFailureDomains(p *vsphere.Platform, fldPath *field.Path) field.Erro
 		}
 		// Folder in failuredomain is optional
 		if len(failureDomain.Topology.Folder) != 0 {
-			folderPathRegexp := regexp.MustCompile("^\\/(.*?)\\/vm\\/(.*?)$")
+			folderPathRegexp := regexp.MustCompile(`^/(.*?)/vm/(.*?)$`)
+			folderPathParts := folderPathRegexp.FindStringSubmatch(failureDomain.Topology.Folder)
+			if len(folderPathParts) < 3 {
+				return append(allErrs, field.Invalid(topologyFld.Child("folder"), failureDomain.Topology.Folder, "full path of folder must be provided in format /<datacenter>/vm/<folder>"))
+			}
+
+			if !strings.Contains(failureDomain.Topology.Folder, failureDomain.Topology.Datacenter) {
+				return append(allErrs, field.Invalid(topologyFld.Child("folder"), failureDomain.Topology.Folder, "the folder defined does not exist in the correct datacenter"))
+			}
+		}
+		// ResourcePool in failuredomain is optional
+		if len(failureDomain.Topology.ResourcePool) != 0 {
+			folderPathRegexp := regexp.MustCompile(`^/(.*?)/host/(.*?)/Resources(.*?)$`)
 			folderPathParts := folderPathRegexp.FindStringSubmatch(failureDomain.Topology.Folder)
 			if len(folderPathParts) < 3 {
 				return append(allErrs, field.Invalid(topologyFld.Child("folder"), failureDomain.Topology.Folder, "full path of folder must be provided in format /<datacenter>/vm/<folder>"))
@@ -230,7 +145,7 @@ func validateFailureDomains(p *vsphere.Platform, fldPath *field.Path) field.Erro
 			allErrs = append(allErrs, field.Required(topologyFld.Child("computeCluster"), "must specify a computeCluster"))
 		} else {
 			computeCluster := failureDomain.Topology.ComputeCluster
-			clusterPathRegexp := regexp.MustCompile("^\\/(.*?)\\/host\\/(.*?)$")
+			clusterPathRegexp := regexp.MustCompile(`^/(.*?)/host/(.*?)$`)
 			clusterPathParts := clusterPathRegexp.FindStringSubmatch(computeCluster)
 			if len(clusterPathParts) < 3 {
 				return append(allErrs, field.Invalid(topologyFld.Child("computeCluster"), computeCluster, "full path of compute cluster must be provided in format /<datacenter>/host/<cluster>"))
@@ -242,70 +157,6 @@ func validateFailureDomains(p *vsphere.Platform, fldPath *field.Path) field.Erro
 			}
 		}
 	}
-
-	return allErrs
-}
-
-// ValidateForProvisioning checks that the specified platform is valid.
-func ValidateForProvisioning(p *vsphere.Platform, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	/* TODO: jcallen: fix this
-	if len(p.Cluster) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("cluster"), "must specify the cluster"))
-	}
-
-	if len(p.Network) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("network"), "must specify the network"))
-	}
-	*/
-
-	return allErrs
-}
-
-// validateFolder checks that a provided folder is an absolute path in the correct datacenter.
-func validateFolder(p *vsphere.Platform, fldPath *field.Path) field.ErrorList {
-
-	allErrs := field.ErrorList{}
-
-	/* TODO: jcallen: fix this
-	dc := p.Datacenter
-	if len(dc) == 0 {
-		dc = "<datacenter>"
-	}
-	expectedPrefix := fmt.Sprintf("/%s/vm/", dc)
-
-	if !strings.HasPrefix(p.Folder, expectedPrefix) {
-		errMsg := fmt.Sprintf("folder must be absolute path: expected prefix %s", expectedPrefix)
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("folder"), p.Folder, errMsg))
-	}
-
-	*/
-
-	return allErrs
-}
-
-// validateResourcePool checks that a provided resource pool is an absolute path in the correct cluster.
-func validateResourcePool(p *vsphere.Platform, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	/* TODO: jcallen: fix this
-	dc := p.Datacenter
-	if len(dc) == 0 {
-		dc = "<datacenter>"
-	}
-	cluster := p.Cluster
-	if len(cluster) == 0 {
-		cluster = "<cluster>"
-	}
-	expectedPrefix := fmt.Sprintf("/%s/host/%s/Resources/", dc, cluster)
-
-	if !strings.HasPrefix(p.ResourcePool, expectedPrefix) {
-		errMsg := fmt.Sprintf("resourcePool must be absolute path: expected prefix %s", expectedPrefix)
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("resourcePool"), p.ResourcePool, errMsg))
-	}
-
-	*/
 
 	return allErrs
 }
