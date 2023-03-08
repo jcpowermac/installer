@@ -3,11 +3,16 @@ package vsphere
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/vmware/govmomi/find"
+	"github.com/vmware/govmomi/vim25"
+	"golang.org/x/net/context"
+	"time"
 
 	"github.com/pkg/errors"
 
 	machineapi "github.com/openshift/api/machine/v1beta1"
 	"github.com/openshift/installer/pkg/asset/installconfig"
+	"github.com/openshift/installer/pkg/asset/installconfig/vsphere"
 	"github.com/openshift/installer/pkg/tfvars/internal/cache"
 	vtypes "github.com/openshift/installer/pkg/types/vsphere"
 )
@@ -46,7 +51,7 @@ func TFVars(sources TFVarsSources) ([]byte, error) {
 	}
 
 	vcenterZones := convertVCentersToMap(sources.InstallConfig.Config.VSphere.VCenters)
-	datacentersFolders, err := createDatacenterFolderMap(sources.InfraID, sources.InstallConfig.Config.VSphere.FailureDomains)
+	datacentersFolders, err := createDatacenterFolderMap(sources.InfraID, sources.InstallConfig.Config.VSphere.FailureDomains, vcenterZones)
 	if err != nil {
 		return nil, err
 	}
@@ -72,13 +77,24 @@ func TFVars(sources TFVarsSources) ([]byte, error) {
 // unique - the key then becomes a string that contains
 // both the datacenter name and the folder to be created.
 
-func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDomain) (map[string]*folder, error) {
+func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDomain, vcenters map[string]vtypes.VCenter) (map[string]*folder, error) {
 	folders := make(map[string]*folder)
+	clients := make(map[string]*vim25.Client)
+
+	for k, v := range vcenters {
+		client, _, logout, err := vsphere.CreateVSphereClients(context.TODO(), v.Server, v.Username, v.Password)
+		defer logout()
+		if err != nil {
+			return nil, err
+		}
+		clients[k] = client
+	}
 
 	for i, fd := range failureDomains {
 		tempFolder := new(folder)
 		tempFolder.Datacenter = fd.Topology.Datacenter
 		tempFolder.Name = fd.Topology.Folder
+		key := fmt.Sprintf("%s-%s", tempFolder.Datacenter, tempFolder.Name)
 
 		// Only if the folder is empty do we create a folder resource
 		// If a folder has been provided it means that it already exists
@@ -86,13 +102,32 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 		if tempFolder.Name == "" {
 			tempFolder.Name = infraID
 			failureDomains[i].Topology.Folder = infraID
-			key := fmt.Sprintf("%s-%s", tempFolder.Datacenter, tempFolder.Name)
 			folders[key] = tempFolder
+		} else {
+			if !folderExist(tempFolder.Name, clients[fd.Server]) {
+				folders[key] = tempFolder
+			}
 		}
 	}
 	return folders, nil
 }
 
+func folderExist(folderPath string, client *vim25.Client) bool {
+	ctx, timeout := context.WithTimeout(context.TODO(), 60*time.Second)
+	defer timeout()
+	finder := find.NewFinder(client)
+
+	folder, err := finder.Folder(ctx, folderPath)
+	if err != nil {
+		return false
+	}
+
+	if folder.InventoryPath == folderPath {
+		return true
+	}
+
+	return false
+}
 func convertVCentersToMap(values []vtypes.VCenter) map[string]vtypes.VCenter {
 	vcenterMap := make(map[string]vtypes.VCenter)
 	for _, v := range values {
