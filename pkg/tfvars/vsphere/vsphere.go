@@ -101,12 +101,15 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 	for _, fd := range failureDomains {
 		key := fmt.Sprintf("%s-%s", fd.Topology.Datacenter, fd.Topology.Folder)
 
+		newFolder := new(folder)
+		newFolder.Datacenter = fd.Topology.Datacenter
+
 		// Only if the folder is empty do we create a folder resource
 		// If a folder has been provided it means that it already exists
 		// and it is to be used.
 		if fd.Topology.Folder == "" {
-			folders[key].Datacenter = fd.Topology.Datacenter
-			folders[key].OrderedFolders[0] = infraID
+			newFolder.OrderedFolders[0] = infraID
+			folders[key] = newFolder
 		} else {
 			// folder is /dcfolder1/dcfolder2/datacenter/vm/folder1/folder2/folder3
 			// split after vm/
@@ -139,7 +142,10 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 				folderPathToCheck := fmt.Sprintf("%s/%s", splitAfter[0], terraformFolderLevel)
 
 				if !folderExist(folderPathToCheck, clients[fd.Server]) {
-					folders[key].Datacenter = fd.Topology.Datacenter
+					if _, ok := folders[key]; !ok {
+						folders[key] = newFolder
+					}
+
 					folders[key].OrderedFolders[order] = terraformFolderLevel
 				}
 			}
