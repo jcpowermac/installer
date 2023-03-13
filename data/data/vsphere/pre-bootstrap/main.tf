@@ -65,10 +65,10 @@ resource "vsphere_folder" "folder" {
   datacenter_id = data.vsphere_datacenter.folder_datacenter[each.key].id
   tags          = [vsphere_tag.tag.id]
 
-  dynamic "childfolders" {
+  dynamic "path" {
     for_each = each.value.ordered_folders
     content {
-      path          = childfolders.value
+      path          = path.value
     }
   }
 }
