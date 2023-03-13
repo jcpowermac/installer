@@ -129,9 +129,7 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 					continue
 				}
 
-				// First time around the loop set
-				// terraformFolderLevel to first entry in
-				// individualFolders
+				// First time around the loop set terraformFolderLevel to first entry in individualFolders
 				if terraformFolderLevel == "" {
 					terraformFolderLevel = f
 				} else {

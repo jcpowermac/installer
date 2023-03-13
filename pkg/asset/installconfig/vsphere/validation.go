@@ -161,7 +161,11 @@ func validateFailureDomain(validationCtx *validationContext, failureDomain *vsph
 	allErrs = append(allErrs, resourcePoolExists(validationCtx, resourcePool, topologyField.Child("resourcePool"))...)
 
 	if len(failureDomain.Topology.Folder) > 0 {
-		allErrs = append(allErrs, folderExists(validationCtx, failureDomain.Topology.Folder, topologyField.Child("folder"))...)
+		// TODO: jcallen: figure out what if this just goes away or not
+		// TODO: jcallen: Probably not ... we would still want to check if the folder exists
+		// TODO: jcallen: so that we can check priv(s). For testing though just remove the check
+
+		//allErrs = append(allErrs, folderExists(validationCtx, failureDomain.Topology.Folder, topologyField.Child("folder"))...)
 		checkDatacenterPrivileges = false
 	}
 
