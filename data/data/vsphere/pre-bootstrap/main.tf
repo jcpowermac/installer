@@ -69,7 +69,7 @@ resource "vsphere_folder" "folder" {
 
 resource "time_sleep" "wait_30_seconds" {
   for_each = var.vsphere_ordered_folders
-  depends_on = [vsphere_folder.folder[each.key]]
+  depends_on = [vsphere_folder.folder]
   create_duration = "30s"
 }
 
