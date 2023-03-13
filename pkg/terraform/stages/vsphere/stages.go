@@ -22,7 +22,7 @@ var PlatformStages = []terraform.Stage{
 	stages.NewStage(
 		"vsphere",
 		"pre-bootstrap",
-		[]providers.Provider{providers.VSphere, providers.VSpherePrivate},
+		[]providers.Provider{providers.VSphere, providers.VSpherePrivate, providers.Time},
 	),
 	stages.NewStage(
 		"vsphere",
