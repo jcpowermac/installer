@@ -2,7 +2,7 @@ locals {
   description           = "Created By OpenShift Installer"
   vcenter_key           = keys(var.vsphere_vcenters)[0]
   failure_domains_count = length(var.vsphere_failure_domains)
-  failure_domain_datacenters = var.vsphere_failure_domains[*].topology.datacenter
+  failure_domain_datacenters = toset(var.vsphere_failure_domains[*].topology.datacenter)
 }
 
 provider "vsphere" {
