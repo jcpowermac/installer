@@ -66,11 +66,11 @@ resource "vsphere_folder" "folder" {
   tags          = [vsphere_tag.tag.id]
   path          = each.value.vsphere_folder_path
 
-
   depends_on = [time_sleep.wait_30_seconds]
 }
 
 resource "time_sleep" "wait_30_seconds" {
+  depends_on = [vsphere_folder.folder]
   create_duration = "30s"
 }
 
