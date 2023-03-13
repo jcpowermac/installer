@@ -65,11 +65,12 @@ resource "vsphere_folder" "folder" {
   datacenter_id = data.vsphere_datacenter.folder_datacenter[each.value.vsphere_datacenter].id
   tags          = [vsphere_tag.tag.id]
   path          = each.value.vsphere_folder_path
+
+
+  depends_on = [time_sleep.wait_30_seconds]
 }
 
 resource "time_sleep" "wait_30_seconds" {
-  //for_each = var.vsphere_ordered_folders
-  depends_on = [vsphere_folder.folder]
   create_duration = "30s"
 }
 
