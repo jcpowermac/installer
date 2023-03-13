@@ -12,7 +12,7 @@ variable "vsphere_networks" {
   default = {}
 }
 
-variable "vsphere_folders" {
+variable "vsphere_ordered_folders" {
   type    = map(any)
   default = {}
 }
