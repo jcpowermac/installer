@@ -26,8 +26,8 @@ type folder struct {
 */
 
 type folder struct {
-	OrderedFolders map[int]string `json:"ordered_folders"`
-	Datacenter     string         `json:"vsphere_datacenter"`
+	Path       string `json:"vsphere_folder_path"`
+	Datacenter string `json:"vsphere_datacenter"`
 }
 
 type config struct {
@@ -37,7 +37,7 @@ type config struct {
 	FailureDomains           []vtypes.FailureDomain                   `json:"vsphere_failure_domains"`
 	NetworksInFailureDomains map[string]string                        `json:"vsphere_networks"`
 	ControlPlanes            []*machineapi.VSphereMachineProviderSpec `json:"vsphere_control_planes"`
-	DatacentersFolders       map[string]*folder                       `json:"vsphere_folders"`
+	OrderedFolders           map[int]*folder                          `json:"vsphere_ordered_folders"`
 }
 
 // TFVarsSources contains the parameters to be converted into Terraform variables
@@ -59,7 +59,7 @@ func TFVars(sources TFVarsSources) ([]byte, error) {
 	}
 
 	vcenterZones := convertVCentersToMap(sources.InstallConfig.Config.VSphere.VCenters)
-	datacentersFolders, err := createDatacenterFolderMap(sources.InfraID, sources.InstallConfig.Config.VSphere.FailureDomains, vcenterZones)
+	orderedFolders, err := createOrderedFoldersMap(sources.InfraID, sources.InstallConfig.Config.VSphere.FailureDomains, vcenterZones)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func TFVars(sources TFVarsSources) ([]byte, error) {
 		FailureDomains:           sources.InstallConfig.Config.VSphere.FailureDomains,
 		NetworksInFailureDomains: sources.NetworksInFailureDomain,
 		ControlPlanes:            sources.ControlPlaneConfigs,
-		DatacentersFolders:       datacentersFolders,
+		OrderedFolders:           orderedFolders,
 	}
 
 	return json.MarshalIndent(cfg, "", "  ")
@@ -85,8 +85,9 @@ func TFVars(sources TFVarsSources) ([]byte, error) {
 // unique - the key then becomes a string that contains
 // both the datacenter name and the folder to be created.
 
-func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDomain, vcenters map[string]vtypes.VCenter) (map[string]*folder, error) {
-	folders := make(map[string]*folder)
+func createOrderedFoldersMap(infraID string, failureDomains []vtypes.FailureDomain, vcenters map[string]vtypes.VCenter) (map[int]*folder, error) {
+	order := 0
+	folders := make(map[int]*folder)
 	clients := make(map[string]*vim25.Client)
 
 	for k, v := range vcenters {
@@ -99,18 +100,13 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 	}
 
 	for _, fd := range failureDomains {
-		key := fmt.Sprintf("%s-%s", fd.Topology.Datacenter, fd.Topology.Folder)
-
-		newFolder := new(folder)
-		newFolder.Datacenter = fd.Topology.Datacenter
-		newFolder.OrderedFolders = make(map[int]string)
 
 		// Only if the folder is empty do we create a folder resource
 		// If a folder has been provided it means that it already exists
 		// and it is to be used.
 		if fd.Topology.Folder == "" {
-			newFolder.OrderedFolders[0] = infraID
-			folders[key] = newFolder
+			folders = addToFolderMap(folders, fd.Topology.Datacenter, infraID, order)
+			order++
 		} else {
 			// folder is /dcfolder1/dcfolder2/datacenter/vm/folder1/folder2/folder3
 			// split after vm/
@@ -126,7 +122,7 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 			// folder1 *must* be created before
 			// folder1/childfolder2
 			// because of vsphere terraform provider resource
-			for order, f := range individualFolders {
+			for _, f := range individualFolders {
 				// if f is empty skip, this should only happen
 				// if / is at the end of a folder path string
 				if f == "" {
@@ -143,11 +139,8 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 				folderPathToCheck := fmt.Sprintf("%s/%s", splitAfter[0], terraformFolderLevel)
 
 				if !folderExist(folderPathToCheck, clients[fd.Server]) {
-					if _, ok := folders[key]; !ok {
-						folders[key] = newFolder
-					}
-
-					folders[key].OrderedFolders[order] = terraformFolderLevel
+					folders = addToFolderMap(folders, fd.Topology.Datacenter, terraformFolderLevel, order)
+					order++
 				}
 			}
 		}
@@ -155,21 +148,32 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 	return folders, nil
 }
 
+func addToFolderMap(folderMap map[int]*folder, datacenter, folderPath string, order int) map[int]*folder {
+	newFolder := new(folder)
+	newFolder.Datacenter = datacenter
+	newFolder.Path = folderPath
+	// does the datacenter folder pair exist in the map?
+	for _, v := range folderMap {
+		if v.Datacenter == datacenter {
+			if v.Path == folderPath {
+				return folderMap
+			}
+		}
+	}
+	folderMap[order] = newFolder
+	return folderMap
+}
+
 func folderExist(folderPath string, client *vim25.Client) bool {
 	ctx, timeout := context.WithTimeout(context.TODO(), 60*time.Second)
 	defer timeout()
 	finder := find.NewFinder(client)
 
-	folder, err := finder.Folder(ctx, folderPath)
-	if err != nil {
+	f, err := finder.Folder(ctx, folderPath)
+	if f == nil || err != nil {
 		return false
 	}
-
-	if folder.InventoryPath == folderPath {
-		return true
-	}
-
-	return false
+	return true
 }
 func convertVCentersToMap(values []vtypes.VCenter) map[string]vtypes.VCenter {
 	vcenterMap := make(map[string]vtypes.VCenter)

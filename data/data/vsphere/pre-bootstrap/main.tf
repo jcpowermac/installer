@@ -2,6 +2,7 @@ locals {
   description           = "Created By OpenShift Installer"
   vcenter_key           = keys(var.vsphere_vcenters)[0]
   failure_domains_count = length(var.vsphere_failure_domains)
+  failure_domain_datacenters = var.vsphere_failure_domains[*].topology.datacenter
 }
 
 provider "vsphere" {
@@ -54,23 +55,16 @@ data "vsphere_virtual_machine" "template" {
 // createDatacenterFolderMap
 
 data "vsphere_datacenter" "folder_datacenter" {
-  for_each = var.vsphere_folders
-  name     = each.value.vsphere_datacenter
+  for_each = local.failure_domain_datacenters
+  name     = each.value
 }
 
 resource "vsphere_folder" "folder" {
-  for_each = var.vsphere_folders
-
+  for_each = var.vsphere_ordered_folders
   type          = "vm"
-  datacenter_id = data.vsphere_datacenter.folder_datacenter[each.key].id
+  datacenter_id = data.vsphere_datacenter.folder_datacenter[each.value.vsphere_datacenter].id
   tags          = [vsphere_tag.tag.id]
-
-  dynamic "path" {
-    for_each = each.value.ordered_folders
-    content {
-      path          = path.value
-    }
-  }
+  path          = each.value.vsphere_folder_path
 }
 
 resource "vsphereprivate_import_ova" "import" {
