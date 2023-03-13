@@ -6,6 +6,7 @@ import (
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/vim25"
 	"golang.org/x/net/context"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -17,9 +18,16 @@ import (
 	vtypes "github.com/openshift/installer/pkg/types/vsphere"
 )
 
+/*
 type folder struct {
 	Name       string `json:"name"`
 	Datacenter string `json:"vsphere_datacenter"`
+}
+*/
+
+type folder struct {
+	OrderedFolders map[int]string `json:"ordered_folders"`
+	Datacenter     string         `json:"vsphere_datacenter"`
 }
 
 type config struct {
@@ -90,22 +98,52 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 		clients[k] = client
 	}
 
-	for i, fd := range failureDomains {
-		tempFolder := new(folder)
-		tempFolder.Datacenter = fd.Topology.Datacenter
-		tempFolder.Name = fd.Topology.Folder
-		key := fmt.Sprintf("%s-%s", tempFolder.Datacenter, tempFolder.Name)
+	for _, fd := range failureDomains {
+		key := fmt.Sprintf("%s-%s", fd.Topology.Datacenter, fd.Topology.Folder)
 
 		// Only if the folder is empty do we create a folder resource
 		// If a folder has been provided it means that it already exists
 		// and it is to be used.
-		if tempFolder.Name == "" {
-			tempFolder.Name = infraID
-			failureDomains[i].Topology.Folder = infraID
-			folders[key] = tempFolder
+		if fd.Topology.Folder == "" {
+			folders[key].Datacenter = fd.Topology.Datacenter
+			folders[key].OrderedFolders[0] = infraID
 		} else {
-			if !folderExist(tempFolder.Name, clients[fd.Server]) {
-				folders[key] = tempFolder
+			// folder is /dcfolder1/dcfolder2/datacenter/vm/folder1/folder2/folder3
+			// split after vm/
+			splitAfter := strings.SplitAfter(fd.Topology.Folder, "vm/")
+			// split folder names by /
+			individualFolders := strings.Split(splitAfter[1], "/")
+
+			terraformFolderLevel := ""
+
+			// each child from vm/ needs to be checked for existence
+			// if the folder doesn't exist we need to create the folder
+			// and it must be in order, meaning:
+			// folder1 *must* be created before
+			// folder1/childfolder2
+			// because of vsphere terraform provider resource
+			for order, f := range individualFolders {
+				// if f is empty skip, this should only happen
+				// if / is at the end of a folder path string
+				if f == "" {
+					continue
+				}
+
+				// First time around the loop set
+				// terraformFolderLevel to first entry in
+				// individualFolders
+				if terraformFolderLevel == "" {
+					terraformFolderLevel = f
+				} else {
+					terraformFolderLevel = fmt.Sprintf("%s/%s", terraformFolderLevel, f)
+				}
+
+				folderPathToCheck := fmt.Sprintf("%s/%s", splitAfter[0], terraformFolderLevel)
+
+				if !folderExist(folderPathToCheck, clients[fd.Server]) {
+					folders[key].Datacenter = fd.Topology.Datacenter
+					folders[key].OrderedFolders[order] = terraformFolderLevel
+				}
 			}
 		}
 	}

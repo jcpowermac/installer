@@ -61,10 +61,16 @@ data "vsphere_datacenter" "folder_datacenter" {
 resource "vsphere_folder" "folder" {
   for_each = var.vsphere_folders
 
-  path          = each.value.name
   type          = "vm"
   datacenter_id = data.vsphere_datacenter.folder_datacenter[each.key].id
   tags          = [vsphere_tag.tag.id]
+
+  dynamic "childfolders" {
+    for_each = each.value.ordered_folders
+    content {
+      path          = childfolders.value
+    }
+  }
 }
 
 resource "vsphereprivate_import_ova" "import" {
