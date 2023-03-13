@@ -67,6 +67,13 @@ resource "vsphere_folder" "folder" {
   path          = each.value.vsphere_folder_path
 }
 
+resource "time_sleep" "wait_30_seconds" {
+  for_each = var.vsphere_ordered_folders
+  depends_on = [vsphere_folder.folder[each.key]]
+  create_duration = "30s"
+}
+
+
 resource "vsphereprivate_import_ova" "import" {
   count = local.failure_domains_count
   name  = format("%s-rhcos-%s-%s", var.cluster_id, var.vsphere_failure_domains[count.index].region, var.vsphere_failure_domains[count.index].zone)
