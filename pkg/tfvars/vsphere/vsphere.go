@@ -103,6 +103,7 @@ func createDatacenterFolderMap(infraID string, failureDomains []vtypes.FailureDo
 
 		newFolder := new(folder)
 		newFolder.Datacenter = fd.Topology.Datacenter
+		newFolder.OrderedFolders = make(map[int]string)
 
 		// Only if the folder is empty do we create a folder resource
 		// If a folder has been provided it means that it already exists
