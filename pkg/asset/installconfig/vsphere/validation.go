@@ -171,7 +171,7 @@ func validateFailureDomain(validationCtx *validationContext, failureDomain *vsph
 	if len(clusterPathParts) < 3 {
 		return append(allErrs, field.Invalid(topologyField.Child("computeCluster"), computeCluster, "full path of cluster is required"))
 	}
-	computeClusterName := clusterPathParts[2]
+	//computeClusterName := clusterPathParts[2]
 
 	allErrs = append(allErrs, validateESXiVersion(validationCtx, computeCluster, vsphereField, topologyField.Child("computeCluster"))...)
 	allErrs = append(allErrs, validateVcenterPrivileges(validationCtx, topologyField.Child("server"))...)
@@ -180,7 +180,7 @@ func validateFailureDomain(validationCtx *validationContext, failureDomain *vsph
 	allErrs = append(allErrs, datastoreExists(validationCtx, failureDomain.Topology.Datacenter, failureDomain.Topology.Datastore, topologyField.Child("datastore"))...)
 
 	for _, network := range failureDomain.Topology.Networks {
-		allErrs = append(allErrs, validateNetwork(validationCtx, failureDomain.Topology.Datacenter, computeClusterName, network, topologyField)...)
+		allErrs = append(allErrs, validateNetwork(validationCtx, failureDomain.Topology.Datacenter, computeCluster, network, topologyField)...)
 	}
 
 	return allErrs
