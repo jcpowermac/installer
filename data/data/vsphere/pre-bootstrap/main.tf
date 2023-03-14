@@ -66,12 +66,22 @@ resource "vsphere_folder" "folder" {
   tags          = [vsphere_tag.tag.id]
   path          = each.value.vsphere_folder_path
 
-  depends_on = [time_sleep.wait_30_seconds]
 }
 
-resource "time_sleep" "wait_30_seconds" {
+/*
+data "vsphere_folder" "null_folder" {
+  for_each = vsphere_folder.folder
+
+  path = each.value.path
   depends_on = [vsphere_folder.folder]
+}
+*/
+
+resource "time_sleep" "wait_30_seconds" {
   create_duration = "30s"
+  triggers = {
+    folder_id = vsphere_folder.folder.id
+  }
 }
 
 
