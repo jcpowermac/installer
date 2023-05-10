@@ -230,36 +230,45 @@ func findImportOvaParams(client *vim25.Client, datacenter, cluster, resourcePool
 	for _, hostObj := range hosts {
 		foundDatastore := false
 		foundNetwork := false
-		err := hostObj.Properties(ctx, hostObj.Reference(), []string{"config.product", "network", "datastore", "runtime"}, &hostSystemManagedObject)
+		err := hostObj.Properties(ctx, hostObj.Reference(), []string{"config", "network", "datastore", "runtime"}, &hostSystemManagedObject)
 		if err != nil {
 			return nil, err
 		}
 
-		// If HardwareVersion is 13 there is no reason to continue checking
-		// There is a ESXi host that does not support hardware 15.
-		if importOvaParams.HardwareVersion != vmx13 {
-			esxiHostVersion, err := version.NewVersion(hostSystemManagedObject.Config.Product.Version)
-			if err != nil {
-				return nil, err
-			}
-
-			importOvaParams.HardwareVersion = vmx13
-			if esxiHostVersion.Equal(v67) {
-				build, err := strconv.Atoi(hostSystemManagedObject.Config.Product.Build)
+		if hostSystemManagedObject.Config != nil {
+			// If HardwareVersion is 13 there is no reason to continue checking
+			// There is a ESXi host that does not support hardware 15.
+			if importOvaParams.HardwareVersion != vmx13 {
+				esxiHostVersion, err := version.NewVersion(hostSystemManagedObject.Config.Product.Version)
 				if err != nil {
 					return nil, err
 				}
-				// This is the ESXi 6.7 U3 build number
-				// Anything less than this version is unsupported with the
-				// out-of-tree CSI.
-				// https://kb.vmware.com/s/article/2143838
-				// https://vsphere-csi-driver.sigs.k8s.io/supported_features_matrix.html
-				if build >= esxi67U3BuildNumber {
+
+				importOvaParams.HardwareVersion = vmx13
+				if esxiHostVersion.Equal(v67) {
+					build, err := strconv.Atoi(hostSystemManagedObject.Config.Product.Build)
+					if err != nil {
+						return nil, err
+					}
+					// This is the ESXi 6.7 U3 build number
+					// Anything less than this version is unsupported with the
+					// out-of-tree CSI.
+					// https://kb.vmware.com/s/article/2143838
+					// https://vsphere-csi-driver.sigs.k8s.io/supported_features_matrix.html
+					if build >= esxi67U3BuildNumber {
+						importOvaParams.HardwareVersion = vmx15
+					}
+				} else if esxiHostVersion.GreaterThan(v67) {
 					importOvaParams.HardwareVersion = vmx15
 				}
-			} else if esxiHostVersion.GreaterThan(v67) {
-				importOvaParams.HardwareVersion = vmx15
 			}
+		} else {
+			// This should _never_ happen, but we have a bug associated with Config being
+			// nil, so apparently it can. If that is the case force to HW15 since vSphere 6.x
+			// is EOL.
+
+			importOvaParams.HardwareVersion = vmx15
+
 		}
 
 		// Skip all hosts that are in maintenance mode.
@@ -267,7 +276,6 @@ func findImportOvaParams(client *vim25.Client, datacenter, cluster, resourcePool
 			continue
 		}
 		for _, dsMoRef := range hostSystemManagedObject.Datastore {
-
 			if importOvaParams.Datastore.Reference().Value == dsMoRef.Value {
 				foundDatastore = true
 				break
