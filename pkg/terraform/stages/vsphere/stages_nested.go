@@ -1,4 +1,4 @@
-//go:build !nested
+//go:build nested
 
 package vsphere
 
