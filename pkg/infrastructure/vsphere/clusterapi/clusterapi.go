@@ -118,9 +118,19 @@ func (p Provider) PreProvision(ctx context.Context, in clusterapi.PreProvisionIn
 			}
 		}
 
+		clusterCheck := make(map[string]bool)
+
 		for _, failureDomain := range installConfig.Config.VSphere.FailureDomains {
 			if failureDomain.Server != server {
 				continue
+			}
+
+			if _, ok := clusterCheck[failureDomain.Topology.ComputeCluster]; !ok {
+				err = createVmGroup(ctx, vctrSession, failureDomain.Topology.ComputeCluster, clusterID.InfraID)
+				if err != nil {
+					return err
+				}
+				clusterCheck[failureDomain.Topology.ComputeCluster] = true
 			}
 
 			if err = initializeFoldersAndTemplates(ctx, cachedImage, failureDomain, vctrSession, installConfig.Config.VSphere.DiskType, clusterID.InfraID, tagID); err != nil {
