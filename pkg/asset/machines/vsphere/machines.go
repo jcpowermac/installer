@@ -27,7 +27,12 @@ type MachineData struct {
 	ControlPlaneMachineSet *machinev1.ControlPlaneMachineSet
 	IPClaims               []ipamv1.IPAddressClaim
 	IPAddresses            []ipamv1.IPAddress
+
+	MachineFailureDomain map[string]string
 }
+
+// TODO: jcallen: need to figure out how to get the failuredomain name to the capv machine
+// creation
 
 // Machines returns a list of machines for a machinepool.
 func Machines(clusterID string, config *types.InstallConfig, pool *types.MachinePool, osImage, role, userDataSecret string) (*MachineData, error) {
@@ -67,12 +72,14 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 		}
 	}
 
-	failureDomains := []machinev1.VSphereFailureDomain{}
+	var failureDomains []machinev1.VSphereFailureDomain
 
 	vsphereMachineProvider := &machineapi.VSphereMachineProviderSpec{}
 
 	for idx := int32(0); idx < replicas; idx++ {
 		logrus.Debugf("Creating %v machine %v", role, idx)
+		data.MachineFailureDomain = make(map[string]string)
+
 		var host *vsphere.Host
 		desiredZone := mpool.Zones[int(idx)%numOfZones]
 		if hosts != nil && int(idx) < len(hosts) {
@@ -132,6 +139,8 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 				// we don't need to set Versions, because we control those via operators.
 			},
 		}
+
+		data.MachineFailureDomain[machine.Name] = failureDomain.Name
 
 		// Apply static IP if configured
 		claim, address, err := applyNetworkConfig(host, provider, machine)

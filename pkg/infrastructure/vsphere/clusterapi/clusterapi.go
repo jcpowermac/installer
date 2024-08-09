@@ -126,7 +126,7 @@ func (p Provider) PreProvision(ctx context.Context, in clusterapi.PreProvisionIn
 				continue
 			}
 
-			if failureDomain.Type == vsphere.HostGroupFailureDomain {
+			if failureDomain.ZoneType == vsphere.HostGroupFailureDomain {
 				if _, ok := clusterCheck[failureDomain.Topology.ComputeCluster]; !ok {
 					err = createVmGroup(ctx, vctrSession, failureDomain.Topology.ComputeCluster, clusterID.InfraID)
 					if err != nil {
@@ -152,21 +152,24 @@ func (p *Provider) InfraReady(ctx context.Context, in clusterapi.InfraReadyInput
 
 	*/
 
-	installConfig := in.InstallConfig
-	for _, fd := range installConfig.Config.VSphere.FailureDomains {
-		if fd.Type == vsphere.HostGroupFailureDomain {
+	/*
+		installConfig := in.InstallConfig
+		for _, fd := range installConfig.Config.VSphere.FailureDomains {
+			if fd.Type == vsphere.HostGroupFailureDomain {
 
+			}
 		}
-	}
 
-	for _, vcenter := range installConfig.Config.VSphere.VCenters {
-		server := vcenter.Server
-		vctrSession, err := installConfig.VSphere.Session(context.TODO(), server)
-		if err != nil {
-			return err
+		for _, vcenter := range installConfig.Config.VSphere.VCenters {
+			server := vcenter.Server
+			vctrSession, err := installConfig.VSphere.Session(context.TODO(), server)
+			if err != nil {
+				return err
+			}
+			fmt.Println(vctrSession.Version)
 		}
-		fmt.Println(vctrSession.Version)
-	}
+
+	*/
 
 	return nil
 }

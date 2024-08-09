@@ -128,6 +128,7 @@ func GenerateMachines(ctx context.Context, clusterID string, config *types.Insta
 					"cluster.x-k8s.io/control-plane": "",
 				},
 			},
+
 			Spec: capv.VSphereMachineSpec{
 				VirtualMachineCloneSpec: capv.VirtualMachineCloneSpec{
 					CloneMode:     capv.FullClone,
@@ -147,6 +148,10 @@ func GenerateMachines(ctx context.Context, clusterID string, config *types.Insta
 					ResourcePool:      resourcePool,
 				},
 			},
+		}
+
+		if len(data.MachineFailureDomain) > 0 {
+			vsphereMachine.Spec.FailureDomain = ptr.To(data.MachineFailureDomain[machine.Name])
 		}
 		vsphereMachine.SetGroupVersionKind(capv.GroupVersion.WithKind("VSphereMachine"))
 		capvMachines = append(capvMachines, vsphereMachine)

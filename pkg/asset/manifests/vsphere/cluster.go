@@ -69,6 +69,44 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 		assetOutput.InfrastructureRefs = append(assetOutput.InfrastructureRefs, infra)
 	}
 
+	for _, failureDomain := range installConfig.Config.VSphere.FailureDomains {
+		if failureDomain.Topology.AffinityGroup.HostGroupName != "" {
+			fd := &capv.VSphereFailureDomain{
+				TypeMeta: metav1.TypeMeta{},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: failureDomain.Name,
+				},
+				Spec: capv.VSphereFailureDomainSpec{
+					Region: capv.FailureDomain{
+						Name:        failureDomain.Region,
+						Type:        capv.ComputeClusterFailureDomain,
+						TagCategory: "openshift-region",
+					},
+					Zone: capv.FailureDomain{
+						Name:        failureDomain.Zone,
+						Type:        capv.HostGroupFailureDomain,
+						TagCategory: "openshift-zone",
+					},
+					Topology: capv.Topology{
+						Datacenter:     failureDomain.Topology.Datacenter,
+						ComputeCluster: &failureDomain.Topology.ComputeCluster,
+						Hosts: &capv.FailureDomainHosts{
+							VMGroupName:   failureDomain.Topology.AffinityGroup.VMGroupName,
+							HostGroupName: failureDomain.Topology.AffinityGroup.HostGroupName,
+						},
+						Networks:  failureDomain.Topology.Networks,
+						Datastore: failureDomain.Topology.Datastore,
+					},
+				},
+			}
+
+			manifests = append(manifests, &asset.RuntimeFile{
+				Object: fd,
+				File:   asset.File{Filename: fmt.Sprintf("01_vsphere-failuredomain-%s.yaml", failureDomain.Name)},
+			})
+		}
+	}
+
 	assetOutput.Manifests = manifests
 
 	return assetOutput, nil

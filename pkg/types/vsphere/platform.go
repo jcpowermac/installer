@@ -177,9 +177,17 @@ type FailureDomain struct {
 	// +kubebuilder:validation:Required
 	Topology Topology `json:"topology"`
 
+	// TODO: jcallen: problem, in capv region and zone is a struct that contains
+	// TODO: jcallen: name, type, and category name. If we did this we could have
+	// TODO: jcallen: to probably create another field and keep the old. This seems painful
+	// TODO: instead just add at FailureDomain level ???
+
 	// Type is the type of failure domain, the current values are "Datacenter", "ComputeCluster" and "HostGroup"
 	// +kubebuilder:validation:Enum="";Datacenter;ComputeCluster;HostGroup
-	Type FailureDomainType `json:"type"`
+	RegionType FailureDomainType `json:"regionType"`
+	// Type is the type of failure domain, the current values are "Datacenter", "ComputeCluster" and "HostGroup"
+	// +kubebuilder:validation:Enum="";Datacenter;ComputeCluster;HostGroup
+	ZoneType FailureDomainType `json:"zoneType"`
 }
 
 // TODO: jcallen: FailureDomainGroup ???
