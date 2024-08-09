@@ -21,7 +21,8 @@ type Provider struct {
 	clusterapi.InfraProvider
 }
 
-var _ clusterapi.PreProvider = Provider{}
+var _ clusterapi.PreProvider = (*Provider)(nil)
+var _ clusterapi.InfraReadyProvider = (*Provider)(nil)
 
 // Name returns the vsphere provider name.
 func (p Provider) Name() string {
@@ -125,18 +126,46 @@ func (p Provider) PreProvision(ctx context.Context, in clusterapi.PreProvisionIn
 				continue
 			}
 
-			if _, ok := clusterCheck[failureDomain.Topology.ComputeCluster]; !ok {
-				err = createVmGroup(ctx, vctrSession, failureDomain.Topology.ComputeCluster, clusterID.InfraID)
-				if err != nil {
-					return err
+			if failureDomain.Type == vsphere.HostGroupFailureDomain {
+				if _, ok := clusterCheck[failureDomain.Topology.ComputeCluster]; !ok {
+					err = createVmGroup(ctx, vctrSession, failureDomain.Topology.ComputeCluster, clusterID.InfraID)
+					if err != nil {
+						return err
+					}
+					clusterCheck[failureDomain.Topology.ComputeCluster] = true
 				}
-				clusterCheck[failureDomain.Topology.ComputeCluster] = true
 			}
 
 			if err = initializeFoldersAndTemplates(ctx, cachedImage, failureDomain, vctrSession, installConfig.Config.VSphere.DiskType, clusterID.InfraID, tagID); err != nil {
 				return fmt.Errorf("unable to initialize folders and templates: %w", err)
 			}
 		}
+	}
+
+	return nil
+}
+func (p *Provider) InfraReady(ctx context.Context, in clusterapi.InfraReadyInput) error {
+
+	/* TODO: jcallen:
+	- How do I find the virtual machines to place them into the vmgroup?
+	- How do I know which vmgroup to put them in?
+
+	*/
+
+	installConfig := in.InstallConfig
+	for _, fd := range installConfig.Config.VSphere.FailureDomains {
+		if fd.Type == vsphere.HostGroupFailureDomain {
+
+		}
+	}
+
+	for _, vcenter := range installConfig.Config.VSphere.VCenters {
+		server := vcenter.Server
+		vctrSession, err := installConfig.VSphere.Session(context.TODO(), server)
+		if err != nil {
+			return err
+		}
+		fmt.Println(vctrSession.Version)
 	}
 
 	return nil

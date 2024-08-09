@@ -40,6 +40,16 @@ const (
 	BootstrapRole = "bootstrap"
 )
 
+// TODO: jcallen: API needs to be defined better
+const (
+	// HostGroupFailureDomain is a failure domain for a host group.
+	HostGroupFailureDomain FailureDomainType = "HostGroup"
+	// ComputeClusterFailureDomain is a failure domain for a compute cluster.
+	ComputeClusterFailureDomain FailureDomainType = "ComputeCluster"
+	// DatacenterFailureDomain is a failure domain for a datacenter.
+	DatacenterFailureDomain FailureDomainType = "Datacenter"
+)
+
 // Platform stores any global configuration used for vsphere platforms.
 type Platform struct {
 	// VCenter is the domain name or IP address of the vCenter.
@@ -166,6 +176,20 @@ type FailureDomain struct {
 	// Topology describes a given failure domain using vSphere constructs
 	// +kubebuilder:validation:Required
 	Topology Topology `json:"topology"`
+
+	// Type is the type of failure domain, the current values are "Datacenter", "ComputeCluster" and "HostGroup"
+	// +kubebuilder:validation:Enum="";Datacenter;ComputeCluster;HostGroup
+	Type FailureDomainType `json:"type"`
+}
+
+// TODO: jcallen: FailureDomainGroup ???
+
+type FailureDomainAffinityGroup struct {
+	// VMGroupName is the name of the VM group
+	VMGroupName string `json:"vmGroupName"`
+
+	// HostGroupName is the name of the Host group
+	HostGroupName string `json:"hostGroupName"`
 }
 
 // Topology holds the required and optional vCenter objects - datacenter,
@@ -217,6 +241,13 @@ type Topology struct {
 	// +kubebuilder:example=`urn:vmomi:InventoryServiceTag:5736bf56-49f5-4667-b38c-b97e09dc9578:GLOBAL`
 	// +optional
 	TagIDs []string `json:"tagIDs,omitempty"`
+
+	// TODO: jcallen: since Hosts and Host is already defined we might want a different name to
+	// TODO: jcallen: avoid confusion
+
+	// Hosts has information required for placement of machines on VSphere hosts.
+	// +optional
+	AffinityGroup *FailureDomainAffinityGroup `json:"affinityGroup,omitempty"`
 }
 
 // VCenter stores the vCenter connection fields
