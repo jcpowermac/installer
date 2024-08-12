@@ -75,8 +75,10 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 		if failureDomain.ZoneType == vsphere.HostGroupFailureDomain {
 
 			dz := &capv.VSphereDeploymentZone{
-				TypeMeta:   metav1.TypeMeta{},
-				ObjectMeta: metav1.ObjectMeta{},
+				TypeMeta: metav1.TypeMeta{},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: failureDomain.Name,
+				},
 				Spec: capv.VSphereDeploymentZoneSpec{
 					Server:        failureDomain.Server,
 					FailureDomain: failureDomain.Name,
