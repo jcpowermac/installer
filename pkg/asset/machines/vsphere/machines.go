@@ -142,6 +142,8 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 
 		data.MachineFailureDomain[machine.Name] = failureDomain.Name
 
+		logrus.Debugf(">>>>> MachineFailureDomain %s %s", machine.Name, failureDomain.Name)
+
 		// Apply static IP if configured
 		claim, address, err := applyNetworkConfig(host, provider, machine)
 		if err != nil {

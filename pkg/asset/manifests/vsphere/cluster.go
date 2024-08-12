@@ -10,6 +10,7 @@ import (
 	"github.com/openshift/installer/pkg/asset"
 	"github.com/openshift/installer/pkg/asset/installconfig"
 	"github.com/openshift/installer/pkg/asset/manifests/capiutils"
+	"github.com/openshift/installer/pkg/types/vsphere"
 )
 
 // GenerateClusterAssets generates the manifests for the cluster-api.
@@ -70,7 +71,7 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 	}
 
 	for _, failureDomain := range installConfig.Config.VSphere.FailureDomains {
-		if failureDomain.Topology.AffinityGroup.HostGroupName != "" {
+		if failureDomain.ZoneType == vsphere.HostGroupFailureDomain {
 			fd := &capv.VSphereFailureDomain{
 				TypeMeta: metav1.TypeMeta{},
 				ObjectMeta: metav1.ObjectMeta{
@@ -91,7 +92,13 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 						Datacenter:     failureDomain.Topology.Datacenter,
 						ComputeCluster: &failureDomain.Topology.ComputeCluster,
 						Hosts: &capv.FailureDomainHosts{
-							VMGroupName:   failureDomain.Topology.AffinityGroup.VMGroupName,
+
+							// TODO: jcallen: because the api is the only way to have an empty vm group
+							// TODO: jcallen: make this the cluster id
+
+							//VMGroupName:   failureDomain.Topology.AffinityGroup.VMGroupName,
+
+							VMGroupName:   clusterID.InfraID,
 							HostGroupName: failureDomain.Topology.AffinityGroup.HostGroupName,
 						},
 						Networks:  failureDomain.Topology.Networks,
