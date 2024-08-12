@@ -80,7 +80,7 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 					Name: failureDomain.Name,
 				},
 				Spec: capv.VSphereDeploymentZoneSpec{
-					Server:        failureDomain.Server,
+					Server:        fmt.Sprintf("https://%s", failureDomain.Server),
 					FailureDomain: failureDomain.Name,
 					ControlPlane:  ptr.To(true),
 					PlacementConstraint: capv.PlacementConstraint{
