@@ -75,10 +75,10 @@ func Machines(clusterID string, config *types.InstallConfig, pool *types.Machine
 	var failureDomains []machinev1.VSphereFailureDomain
 
 	vsphereMachineProvider := &machineapi.VSphereMachineProviderSpec{}
+	data.MachineFailureDomain = make(map[string]string)
 
 	for idx := int32(0); idx < replicas; idx++ {
 		logrus.Debugf("Creating %v machine %v", role, idx)
-		data.MachineFailureDomain = make(map[string]string)
 
 		var host *vsphere.Host
 		desiredZone := mpool.Zones[int(idx)%numOfZones]

@@ -5,6 +5,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 
 	"github.com/openshift/installer/pkg/asset"
@@ -72,6 +73,21 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 
 	for _, failureDomain := range installConfig.Config.VSphere.FailureDomains {
 		if failureDomain.ZoneType == vsphere.HostGroupFailureDomain {
+
+			dz := &capv.VSphereDeploymentZone{
+				TypeMeta:   metav1.TypeMeta{},
+				ObjectMeta: metav1.ObjectMeta{},
+				Spec: capv.VSphereDeploymentZoneSpec{
+					Server:        failureDomain.Server,
+					FailureDomain: failureDomain.Name,
+					ControlPlane:  ptr.To(true),
+					PlacementConstraint: capv.PlacementConstraint{
+						ResourcePool: failureDomain.Topology.ResourcePool,
+						Folder:       failureDomain.Topology.Folder,
+					},
+				},
+			}
+
 			fd := &capv.VSphereFailureDomain{
 				TypeMeta: metav1.TypeMeta{},
 				ObjectMeta: metav1.ObjectMeta{
@@ -110,6 +126,11 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 			manifests = append(manifests, &asset.RuntimeFile{
 				Object: fd,
 				File:   asset.File{Filename: fmt.Sprintf("01_vsphere-failuredomain-%s.yaml", failureDomain.Name)},
+			})
+
+			manifests = append(manifests, &asset.RuntimeFile{
+				Object: dz,
+				File:   asset.File{Filename: fmt.Sprintf("01_vsphere-deploymentzone-%s.yaml", failureDomain.Name)},
 			})
 		}
 	}
