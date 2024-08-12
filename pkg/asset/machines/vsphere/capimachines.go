@@ -150,9 +150,13 @@ func GenerateMachines(ctx context.Context, clusterID string, config *types.Insta
 			},
 		}
 
-		if len(data.MachineFailureDomain) > 0 {
-			vsphereMachine.Spec.FailureDomain = ptr.To(data.MachineFailureDomain[machine.Name])
+		if failureDomainName, ok := data.MachineFailureDomain[machine.Name]; ok {
+			logrus.Debugf(">>>>>>>>>> set failure domain %s, %s", failureDomainName, machine.Name)
+			vsphereMachine.Spec.FailureDomain = &failureDomainName
+		} else {
+			logrus.Warnf("unable to find failure domain for machine %s", machine.Name)
 		}
+
 		vsphereMachine.SetGroupVersionKind(capv.GroupVersion.WithKind("VSphereMachine"))
 		capvMachines = append(capvMachines, vsphereMachine)
 
