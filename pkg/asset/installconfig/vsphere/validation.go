@@ -173,6 +173,11 @@ func validateFailureDomain(validationCtx *validationContext, failureDomain *vsph
 		checkDatacenterPrivileges = false
 	}
 
+	/* TODO: jcallen: validation host group, vm group
+	TODO: jcallen: change zonal tags validation
+
+	*/
+
 	allErrs = append(allErrs, validateESXiVersion(validationCtx, failureDomain.Topology.ComputeCluster, vsphereField, topologyField.Child("computeCluster"))...)
 	allErrs = append(allErrs, validateVcenterPrivileges(validationCtx, topologyField.Child("server"))...)
 	allErrs = append(allErrs, computeClusterExists(validationCtx, failureDomain.Topology.ComputeCluster, topologyField.Child("computeCluster"), checkComputeClusterPrivileges, checkTags)...)
@@ -355,10 +360,13 @@ func computeClusterExists(validationCtx *validationContext, computeCluster strin
 	}
 
 	if checkTagAttachment {
+		/* TODO: jcallen: fix me...
 		err = validateTagAttachment(validationCtx, computeClusterMo.Reference())
 		if err != nil {
 			return field.ErrorList{field.InternalError(fldPath, err)}
 		}
+
+		*/
 	}
 
 	return field.ErrorList{}
