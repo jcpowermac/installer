@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/govmomi/object"
 	"sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-vsphere/pkg/session"
@@ -39,12 +40,15 @@ func initializeFoldersAndTemplates(ctx context.Context, cachedImage string, fail
 	if err != nil {
 		return err
 	}
+
 	dcFolders, err := dc.Folders(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to get datacenter folder: %w", err)
 	}
 
-	folderPath := path.Join(dcFolders.VmFolder.InventoryPath, clusterID)
+	folderPath := path.Join(dc.InventoryPath, "vm", clusterID)
+
+	logrus.Debugf("datacenter vm folder inventory path: %s\n", folderPath)
 
 	// we must set the Folder to the infraId somewhere, we will need to remove that.
 	// if we are overwriting folderPath it needs to have a slash (path)
@@ -57,7 +61,7 @@ func initializeFoldersAndTemplates(ctx context.Context, cachedImage string, fail
 
 	// Only createFolder() and attach the tag if the folder does not exist prior to installing
 	if folderObj, err = folderExists(ctx, folderPath, session); folderObj == nil && err == nil {
-		folderObj, err = createFolder(ctx, folderPath, session)
+		folderObj, err = createFolder(ctx, folderPath, session, dcFolders.VmFolder)
 		if err != nil {
 			return fmt.Errorf("unable to create folder: %w", err)
 		}
