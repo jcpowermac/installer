@@ -146,7 +146,7 @@ func (i *InfraProvider) Provision(ctx context.Context, dir string, parents asset
 	if oi, ok := os.LookupEnv("OPENSHIFT_INSTALL_PRESERVE_BOOTSTRAP"); ok && oi != "" {
 		defer func() {
 			logrus.Warn("OPENSHIFT_INSTALL_PRESERVE_BOOTSTRAP is set, shutting down local control plane.")
-			clusterapi.System().Teardown()
+			//clusterapi.System().Teardown()
 		}()
 	}
 
@@ -458,7 +458,7 @@ func (i *InfraProvider) DestroyBootstrap(ctx context.Context, dir string) error 
 	if err != nil && !errors.Is(err, context.Canceled) {
 		logrus.Warnf("Timeout deleting bootstrap machine: %s", err)
 	}
-	clusterapi.System().Teardown()
+	//clusterapi.System().Teardown()
 
 	if p, ok := i.impl.(PostDestroyer); ok {
 		postDestroyInput := PostDestroyerInput{

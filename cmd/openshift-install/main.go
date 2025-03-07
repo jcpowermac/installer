@@ -17,7 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
 	"github.com/openshift/installer/cmd/openshift-install/command"
-	"github.com/openshift/installer/pkg/clusterapi"
 )
 
 func main() {
@@ -129,5 +128,5 @@ func handleInterrupt(signalCtx context.Context) context.Context {
 }
 
 func shutdown() {
-	clusterapi.System().Teardown()
+	//clusterapi.System().Teardown()
 }
