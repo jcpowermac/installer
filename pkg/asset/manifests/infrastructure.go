@@ -216,9 +216,15 @@ func (i *Infrastructure) Generate(ctx context.Context, dependencies asset.Parent
 		config.Status.PlatformStatus.GCP.CloudLoadBalancerConfig = &configv1.CloudLoadBalancerConfig{
 			DNSType: configv1.PlatformDefaultDNSType,
 		}
-		if installConfig.Config.GCP.UserProvisionedDNS == dns.UserProvisionedDNSEnabled {
-			config.Status.PlatformStatus.GCP.CloudLoadBalancerConfig.DNSType = configv1.ClusterHostedDNSType
-		}
+
+		config.Status.PlatformStatus.GCP.CloudLoadBalancerConfig.DNSType = configv1.ClusterHostedDNSType
+		/*
+			if installConfig.Config.GCP.UserProvisionedDNS == dns.UserProvisionedDNSEnabled {
+				config.Status.PlatformStatus.GCP.CloudLoadBalancerConfig.DNSType = configv1.ClusterHostedDNSType
+			}
+
+		*/
+
 	case ibmcloud.Name:
 		config.Spec.PlatformSpec.Type = configv1.IBMCloudPlatformType
 		var cisInstanceCRN, dnsInstanceCRN string
