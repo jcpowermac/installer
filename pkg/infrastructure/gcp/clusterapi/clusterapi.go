@@ -18,7 +18,7 @@ import (
 	"github.com/openshift/installer/pkg/asset/manifests/capiutils"
 	"github.com/openshift/installer/pkg/infrastructure/clusterapi"
 	"github.com/openshift/installer/pkg/types"
-	"github.com/openshift/installer/pkg/types/dns"
+	//"github.com/openshift/installer/pkg/types/dns"
 	gcptypes "github.com/openshift/installer/pkg/types/gcp"
 )
 
@@ -221,27 +221,27 @@ func (p Provider) InfraReady(ctx context.Context, in clusterapi.InfraReadyInput)
 		return fmt.Errorf("failed to add firewall rules: %w", err)
 	}
 
-	if in.InstallConfig.Config.GCP.UserProvisionedDNS != dns.UserProvisionedDNSEnabled {
-		// Get the network from the GCP Cluster. The network is used to create the private managed zone.
-		if gcpCluster.Status.Network.SelfLink == nil {
-			return fmt.Errorf("failed to get GCP network: %w", err)
-		}
-
-		// Create the private zone if one does not exist
-		if err := createPrivateManagedZone(ctx, in.InstallConfig, in.InfraID, *gcpCluster.Status.Network.SelfLink); err != nil {
-			return fmt.Errorf("failed to create the private managed zone: %w", err)
-		}
-
-		apiIntIPAddress, err := getInternalLBAddress(ctx, in.InstallConfig.Config.GCP.ProjectID, in.InstallConfig.Config.GCP.Region, getAPIAddressName(in.InfraID))
-		if err != nil {
-			return fmt.Errorf("failed to get the internal load balancer address: %w", err)
-		}
-
-		// Create the public (optional) and private dns records
-		if err := createDNSRecords(ctx, in.InstallConfig, in.InfraID, apiIPAddress, apiIntIPAddress); err != nil {
-			return fmt.Errorf("failed to create DNS records: %w", err)
-		}
+	//if in.InstallConfig.Config.GCP.UserProvisionedDNS != dns.UserProvisionedDNSEnabled {
+	// Get the network from the GCP Cluster. The network is used to create the private managed zone.
+	if gcpCluster.Status.Network.SelfLink == nil {
+		return fmt.Errorf("failed to get GCP network: %w", err)
 	}
+
+	// Create the private zone if one does not exist
+	if err := createPrivateManagedZone(ctx, in.InstallConfig, in.InfraID, *gcpCluster.Status.Network.SelfLink); err != nil {
+		return fmt.Errorf("failed to create the private managed zone: %w", err)
+	}
+
+	apiIntIPAddress, err := getInternalLBAddress(ctx, in.InstallConfig.Config.GCP.ProjectID, in.InstallConfig.Config.GCP.Region, getAPIAddressName(in.InfraID))
+	if err != nil {
+		return fmt.Errorf("failed to get the internal load balancer address: %w", err)
+	}
+
+	// Create the public (optional) and private dns records
+	if err := createDNSRecords(ctx, in.InstallConfig, in.InfraID, apiIPAddress, apiIntIPAddress); err != nil {
+		return fmt.Errorf("failed to create DNS records: %w", err)
+	}
+	//}
 
 	return nil
 }
