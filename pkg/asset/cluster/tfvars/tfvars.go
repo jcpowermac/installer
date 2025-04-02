@@ -507,21 +507,21 @@ func (t *TerraformVariables) Generate(ctx context.Context, parents asset.Parents
 		publicZoneName := ""
 		privateZoneName := ""
 
-		if installConfig.Config.GCP.UserProvisionedDNS != dns.UserProvisionedDNSEnabled {
-			if installConfig.Config.Publish == types.ExternalPublishingStrategy {
-				publicZone, err := client.GetDNSZone(ctx, installConfig.Config.GCP.ProjectID, installConfig.Config.BaseDomain, true)
-				if err != nil {
-					return errors.Wrapf(err, "failed to get GCP public zone")
-				}
-				publicZoneName = publicZone.Name
-			}
-
-			// Set the private zone
-			privateZoneName, err = manifests.GetGCPPrivateZoneName(ctx, client, installConfig, clusterID.InfraID)
+		//if installConfig.Config.GCP.UserProvisionedDNS != dns.UserProvisionedDNSEnabled {
+		if installConfig.Config.Publish == types.ExternalPublishingStrategy {
+			publicZone, err := client.GetDNSZone(ctx, installConfig.Config.GCP.ProjectID, installConfig.Config.BaseDomain, true)
 			if err != nil {
-				return fmt.Errorf("failed to find gcp private dns zone: %w", err)
+				return errors.Wrapf(err, "failed to get GCP public zone")
 			}
+			publicZoneName = publicZone.Name
 		}
+
+		// Set the private zone
+		privateZoneName, err = manifests.GetGCPPrivateZoneName(ctx, client, installConfig, clusterID.InfraID)
+		if err != nil {
+			return fmt.Errorf("failed to find gcp private dns zone: %w", err)
+		}
+		//}
 
 		ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 		defer cancel()
