@@ -58,6 +58,7 @@ func GetFinder(server, username, password string) (*find.Finder, error) {
 }
 
 func findViaPathOrName(finder *find.Finder, objectPath, objectFindPath string) (string, error) {
+	localLogger.Debugf("running findViaPathOrName objectPath %s, objectFindPath %s", objectPath, objectFindPath)
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
@@ -65,6 +66,7 @@ func findViaPathOrName(finder *find.Finder, objectPath, objectFindPath string) (
 	if err != nil {
 		return "", err
 	}
+	localLogger.Debugf("Found %d objects in %s", len(elements), objectFindPath)
 
 	for _, e := range elements {
 		if e.Path == objectPath {
@@ -75,7 +77,7 @@ func findViaPathOrName(finder *find.Finder, objectPath, objectFindPath string) (
 			return e.Path, nil
 		}
 	}
-	return "", errors.New("unable to find object")
+	return "", fmt.Errorf("unable to find object with path %s or find path %s", objectPath, objectFindPath)
 }
 
 // fixNoVCentersScenario this function creates the VCenters slice
@@ -214,6 +216,7 @@ func ConvertInstallConfig(config *types.InstallConfig) error {
 // datacenter and pathType.
 // pathType must only be "host", "vm", or "datastore".
 func SetObjectPath(finder *find.Finder, pathType, objectPath, datacenter string) (string, error) {
+	localLogger.Debugf("running SetObjectPath with pathType %s, objectPath %s, datacenter %s", pathType, objectPath, datacenter)
 	if objectPath != "" && !path.IsAbs(objectPath) {
 		var joinedObjectPath string
 		var joinedObjectFindPath string
